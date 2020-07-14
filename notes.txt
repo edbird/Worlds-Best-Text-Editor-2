@@ -1,0 +1,5 @@
+if I was going to write TheWorldsBestTextEditor2 I would
+
+> make the refresh rate event driven
+> create an intermediate layer for graphics output which emulates NCurses
+> make the cursor object a fundamental part of the buffer object
