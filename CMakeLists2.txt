@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.7)
+
+project(TextGraphicsLibProject VERSION 1.0)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+#set(CMAKE_BUILD_TYPE DEBUG)
+
+# Set default compile flags for GCC
+if(CMAKE_COMPILER_IS_GNUCXX)
+    message(STATUS "GCC detected, adding compile flags")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra")
+endif(CMAKE_COMPILER_IS_GNUCXX)
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}) #/home/ecb/Worlds-Best-Text-Editor-3/Text-Graphics-Lib)
+
+find_package(SDL2 REQUIRED)
+find_package(SDL2TTF REQUIRED)
+
+add_subdirectory(FontConfigHelper)
+add_subdirectory(ResourceLib)
+add_subdirectory(ColorLib)
+add_subdirectory(FontLib)
+add_subdirectory(ExceptionLib)
+
+add_executable(TextGraphicsLibExe
+    main.cpp
+)
+
+configure_file(Version.h.in Version.h)
+
+#target_include_directories(TextGraphicsLibProject PUBLIC "${PROJECT_BINARY_DIR}")
+
+target_link_libraries(TextGraphicsLibExe
+    PRIVATE
+        resourceLib
+        fontLib     # my Font Library
+        textGraphicsLib
+        #fontConfigHelperLib
+        #exceptionLib
+        fontconfig  # Linux Font Config library
+        ${SDL2_LIBRARIES}
+        ${SDL2TTF_LIBRARY}
+)

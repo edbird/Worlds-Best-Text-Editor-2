@@ -1,0 +1,5 @@
+Run:
+
+`export PKG_CONFIG_PATH="/home/debian/jsoncpp/lib/pkgconfig"`
+
+then run `cmake ..` (from directory `build`)
