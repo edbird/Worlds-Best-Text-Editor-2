@@ -1,10 +1,10 @@
 
 
-#include "Config.hpp"
-#include "Window.hpp"
+#include "Config.h"
+#include "Window.h"
 
 
-#include "program_arguments.hpp"
+#include "program_arguments.h"
 
 
 #include <cstdint>

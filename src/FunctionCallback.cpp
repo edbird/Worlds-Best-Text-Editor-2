@@ -1,9 +1,9 @@
-#include "FunctionCallback.hpp"
+#include "FunctionCallback.h"
 
 
-#include "Window.hpp"
-#include "Textbox.hpp"
-#include "Label.hpp"
+#include "Window.h"
+#include "Textbox.h"
+#include "Label.h"
 
 
 #include <iostream>

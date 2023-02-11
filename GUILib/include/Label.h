@@ -2,32 +2,26 @@
 #define LABEL_H
 
 
-#include "Functions.hpp"
-#include "GUIObject.hpp"
-
 
 #include <SDL.h>
-#include <SDL_ttf.h>
 
 
 #include <string>
 #include <sstream>
 
 
+#include "FontManager.h"
 
+#include "GUIObject.h"
 
-
-// label
-// can be used for debugging
 class Label : public GUIObject
 {
 
 public:
 
-    // Pass in a font description object which indicates which font texture should be used
-    Label();
+    Label(const int);
     
-    Label(const std::string& text);
+    Label(const int, const int, const int, const std::string& text);
 
     /*
     int Width() const
@@ -59,7 +53,9 @@ public:
     }
     */
 
+    void processEvent(const Json::Value &event) override;
 
+    // Creates an SDL Texture with the string text
     void setText(const std::string& text);
 
 
@@ -70,17 +66,18 @@ protected:
     // so this function must be called after the contents of _text_ is changed
     void autoSetSize();
 
-public:
+    void virtualDraw(std::shared_ptr<SDL_Renderer> renderer) const override;
 
-    void draw() const;
-
+    void initializeFontManager();
 
 
 private:
 
     std::string mText;
 
-    SomeFontDescriptionObject // this will indicate which font texture should be used. it will depend on the
+    std::string mFontUniqueKeyString;
+    FontManager mFontManager;
+    // this will indicate which font texture should be used. it will depend on the
     // font color
     // font size
     // font type (font name: eg Monospace, Times New Roman, etc.)
@@ -88,4 +85,4 @@ private:
 };
 
 
-#endif // LABEL_H
+#endif

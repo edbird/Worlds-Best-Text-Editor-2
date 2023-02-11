@@ -1,8 +1,8 @@
-#ifndef CURSOR_HPP
-#define CURSOR_HPP
+#ifndef CURSOR_H
+#define CURSOR_H
 
 
-#include "Config.hpp"
+#include "Config.h"
 
 #include <SDL.h>
 
@@ -457,4 +457,4 @@ class Cursor
 
 };
 
-#endif // CURSOR_HPP
+#endif // CURSOR_H

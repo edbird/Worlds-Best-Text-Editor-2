@@ -1,4 +1,4 @@
-#include "Actions.hpp"
+#include "Actions.h"
 
 // TODO: this is the default one, swap code with below
 bool operator==(const CurrentKeyboardAction &current_keyboard_action, const ActionKey &action_key)

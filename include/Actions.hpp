@@ -1,8 +1,8 @@
-#ifndef ACTIONS_HPP
-#define ACTIONS_HPP
+#ifndef ACTIONS_H
+#define ACTIONS_H
 
 
-#include "Keyboard.hpp"
+#include "Keyboard.h"
 
 
 #include <iostream>

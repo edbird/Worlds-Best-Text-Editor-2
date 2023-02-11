@@ -1,5 +1,5 @@
-#ifndef FUNCTIONCALLBACK_HPP
-#define FUNCTIONCALLBACK_HPP
+#ifndef FUNCTIONCALLBACK_H
+#define FUNCTIONCALLBACK_H
 
 class Window;
 
@@ -26,4 +26,4 @@ void fc_left(Window&);
 void fc_right(Window&);
 
 
-#endif // FUNCTIONCALLBACK_HPP
+#endif // FUNCTIONCALLBACK_H

@@ -140,6 +140,7 @@ void writeWithBackground(
 }
 
 
+// TODO: versions of these functions which compute the drawable area
 
 void writeString(
     std::shared_ptr<SDL_Renderer> sdlRenderer,

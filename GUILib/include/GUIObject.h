@@ -4,6 +4,8 @@
 
 #include <SDL.h>
 
+#include <jsoncpp/json/json.h>
+
 
 // Indicates where position value is relative to
 enum class Anchor_e
@@ -29,8 +31,13 @@ public:
     GUIObject(const int, const int, const int);
     GUIObject(const int, const int, const int, const int, const int);
 
-    virtual void draw() const = 0;
-    virtual void drawBackground() const;
+    virtual void setWindowId(const int windowId);
+    virtual int getWindowId() const;
+
+    // Template Method for drawing algorithm
+    void draw() const;
+
+    virtual void processEvent(const Json::Value &event) = 0;
 
     virtual int posX() const;
     virtual int posY() const;
@@ -43,6 +50,9 @@ protected:
     int getOffsetX() const;
     int getOffsetY() const;
 
+    int getDrawPosX() const;
+    int getDrawPosY() const;
+
 public:
 
     virtual void setPosition(const int, const int);
@@ -50,15 +60,27 @@ public:
     virtual void setWidth(const int);
     virtual void setHeight(const int);
 
-    void setAnchor(const LabelAnchor anchor);
+    void setAnchor(const Anchor_e anchor);
 
-    void setBackgroundColor(const Uint8 r, const Uint8 g, const Uint8 b);
+    void setBackgroundColor(const SDL_Color color);
 
+protected:
+
+    // This function defines the overall drawing algorithm. It can be overridden
+    // if necessary.
+    virtual void virtualDraw(std::shared_ptr<SDL_Renderer> renderer) const;
+
+    // All GUI Objects have a defined rectangular area. This function defines
+    // the algorithm for drawing the background. It is virtual, so can be
+    // overridden if necessary.
+    virtual void drawBackground(std::shared_ptr<SDL_Renderer> renderer) const;
+
+    SDL_Color getBackgroundColor() const;
 
 private:
 
     // Defaults to window 0 which will be the first one if created
-    const int mWindowId{0};
+    int mWindowId;
 
     int mSizeX{0};
     int mSizeY{0};
@@ -69,9 +91,9 @@ private:
     int mOffsetX{0};
     int mOffsetY{0};
 
-    SDL_Color mColor{0, 0, 0};
+    SDL_Color mBackgroundColor{0, 0, 0, 255};
 
-    mAnchor{Anchor_e::TOP_LEFT};
+    Anchor_e mAnchor{Anchor_e::TOP_LEFT};
 
 };
 

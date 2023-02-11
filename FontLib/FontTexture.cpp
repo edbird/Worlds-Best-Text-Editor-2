@@ -1,9 +1,7 @@
 #include "FontTexture.h"
 
 // Internal includes
-////#include "Color.h"
-// TODO: fix cmake problem
-#include "../ColorLib/Color.h"
+#include "ColorLib.h"
 #include "ServiceLocator.h"
 
 // External includes
@@ -251,6 +249,9 @@ void FontTexture::renderChars(
         throw std::runtime_error("mWindowId does not have value");
     }
     const auto windowId = mWindowId.value();
+
+    ColorPalette palette;
+    const auto &COLOR_TEXT_DEFAULT = palette.get(ColorName::TEXT_DEFAULT);
     
     std::shared_ptr<SDL_Surface> surface(
         TTF_RenderText_Blended(

@@ -1,18 +1,18 @@
-#ifndef WINDOW_HPP
-#define WINDOW_HPP
+#ifndef WINDOW_H
+#define WINDOW_H
 
 
-#include "Actions.hpp"
-#include "FunctionCallback.hpp"
-#include "Config.hpp"
-#include "FontTextureManager.hpp"
-//#include "Buffer.hpp"
-#include "Textbox.hpp"
-#include "Label.hpp"
-#include "Cursor.hpp"
-#include "KeyMap.hpp"
-#include "Keyboard.hpp"
-#include "ColorPalette.hpp"
+#include "Actions.h"
+#include "FunctionCallback.h"
+#include "Config.h"
+#include "FontTextureManager.h"
+//#include "Buffer.h"
+#include "Textbox.h"
+#include "Label.h"
+#include "Cursor.h"
+#include "KeyMap.h"
+#include "Keyboard.h"
+#include "ColorPalette.h"
 
 
 #include <SDL.h>
@@ -152,7 +152,7 @@ class Window
             _status_label_ = new Label("Worlds Best Text Editor", *_ftm_);
             //_status_label_->SetPosition(0, _size_y_);
             _status_label_->SetPosition(0, _HEIGHT_);
-            _status_label_->SetAnchor(LabelAnchor::BOTTOM_LEFT);
+            _status_label_->SetAnchor(Anchor_e::BOTTOM_LEFT);
 
             // Reset SDL timer after load
             _timer_ = SDL_GetTicks();
@@ -595,7 +595,7 @@ class Window
                                         //    _textbox_ptr_->CursorLeft();
                                         //}
                                         _textbox_ptr_->BackspaceAtCursor(); // TODO: change other functions to follow the new format
-                                        // see Textbox.hpp for more details (implementation hiding)
+                                        // see Textbox.h for more details (implementation hiding)
                                         break;
 
                                     default:

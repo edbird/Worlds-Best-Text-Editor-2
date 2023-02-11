@@ -6,7 +6,7 @@
 #include "FontManager.h"
 ////#include "Color.h"
 // TODO: fix cmake problem
-#include "../ColorLib/Color.h"
+#include "ColorLib.h"
 
 // External includes
 #include <SDL2/SDL.h>
@@ -35,7 +35,7 @@ void writeWithBackground(
     const Uint16 c,
     int &x, const int y,
     const bool advance = false,
-    const SDL_Color &backgroundColor = COLOR_WHITE);
+    const SDL_Color &backgroundColor = ColorPalette::getStatic(ColorName::WHITE));
 
 
 void writeString(
@@ -52,7 +52,7 @@ void writeStringWithBackground(
     const std::string &text,
     int &x, const int y,
     const bool advance = false,
-    const SDL_Color &backgroundColor = COLOR_WHITE);
+    const SDL_Color &backgroundColor = ColorPalette::getStatic(ColorName::WHITE));
 
 
 void writeStringWithTickTockBackground(
@@ -61,8 +61,8 @@ void writeStringWithTickTockBackground(
     const std::string &text,
     int &x, const int y,
     const bool advance = false,
-    const SDL_Color &backgroundColor1 = COLOR_WHITE,
-    const SDL_Color &backgroundColor2 = COLOR_GREY);
+    const SDL_Color &backgroundColor1 = ColorPalette::getStatic(ColorName::WHITE),
+    const SDL_Color &backgroundColor2 = ColorPalette::getStatic(ColorName::GREY));
 
 
 void writeCustomSymbol(

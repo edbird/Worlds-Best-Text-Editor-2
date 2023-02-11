@@ -1,4 +1,4 @@
-#include "Buffer.hpp"
+#include "Buffer.h"
 
 // TODO: seperate size and drawing code to new class Textbox
 Buffer::Buffer() //const Config& config)

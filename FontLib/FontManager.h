@@ -111,6 +111,9 @@ public:
 
 
 
+    // fontUniqueKeyString is a piece of data which is returned
+    // to the caller which can be used to reference the particular
+    // font loaded at a later time
 
     // To figure out how to pass the arguments, need to know
     // how the function we call works
@@ -120,6 +123,7 @@ public:
         const std::string& fontFullPath,
         const int fontSize,
         const SDL_Color color,
+        std::string& fontUniqueKeyString,
         std::string& validChars);
 
     
@@ -131,18 +135,27 @@ public:
         const std::string& fontFilenameSearchDescription,
         const int fontSize,
         const SDL_Color color,
+        std::string& fontUniqueKeyString,
         std::string& validChars);
 
-
+    // Get an already loaded font texture using the parameters
+    // which form the description used to load and render the
+    // initial font texture
     std::shared_ptr<FontTexture> getFontTexture(
         const windowId_t windowId,
         const std::string& fontFullPath,
         const int fontSize,
         const SDL_Color color) const;
 
-
+    // Get an already loaded font texture using a font key
+    // object, which uniquely identifies a loaded font texture
     std::shared_ptr<FontTexture> getFontTexture(
-        const FontKey& fontKey);
+        const FontKey& fontKey) const;
+
+    // Get an already loaded font texture using a unique
+    // string which uniquely identified a loaded font texture
+    std::shared_ptr<FontTexture> getFontTexture(
+        const std::string &fontUniqueKeyString) const;
 
 
 private:

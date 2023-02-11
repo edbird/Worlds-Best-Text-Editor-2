@@ -1,5 +1,5 @@
-#ifndef APPLICATION_HPP
-#define APPLICATION_HPP
+#ifndef APPLICATION_H
+#define APPLICATION_H
 
 class Application
 {
@@ -13,4 +13,4 @@ class Application
 
 }
 
-#endif // APPLICATION_HPP
+#endif // APPLICATION_H

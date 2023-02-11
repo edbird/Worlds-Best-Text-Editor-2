@@ -12,7 +12,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
-list(APPEND CMAKE_PREFIX_PATH "/home/debian/local/jsoncpp/lib/")
+#list(APPEND CMAKE_PREFIX_PATH "/home/debian/local/jsoncpp/lib/")
 
 #set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -26,11 +26,11 @@ find_package(SDL2 REQUIRED)
 find_package(SDL2TTF REQUIRED)
 
 message(STATUS "CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}")
-set(JSONCPP_DIR "/home/debian/local/jsoncpp")
+#set(JSONCPP_DIR "/home/debian/local/jsoncpp")
 
-find_package(PkgConfig REQUIRED)
+#find_package(PkgConfig REQUIRED)
 
-pkg_search_module(JSONCPP jsoncpp)
+#pkg_search_module(JSONCPP jsoncpp)
 
 #find_package(JSONCPP REQUIRED)
 #pkg_check_modules(JSONCPP jsoncpp)
@@ -54,6 +54,8 @@ add_subdirectory(ResourceLib)
 add_subdirectory(ColorLib)
 add_subdirectory(FontLib)
 add_subdirectory(ExceptionLib)
+add_subdirectory(TextArea)
+add_subdirectory(GUILib)
 
 add_executable(TextGraphicsLibTestExe
     main2.cpp
@@ -74,18 +76,28 @@ target_link_libraries(TextGraphicsLibTestExe
 configure_file(Version.h.in Version.h)
 
 
+# Build test executable for Graphical User Interface library
+#add_executable(GUITestExe
+#    mainGUITest.cpp
+#)
+
+#target_link_libraries(GUITestExe
+#    graphicalUserInterfaceLib
+#)
+
+
 # Build directories contianing libraries for TextAreaTestExe
 
 
 
-add_executable(TextAreaTestExe
-    main1.cpp
-)
+#add_executable(TextAreaTestExe
+#    main1.cpp
+#)
 
-target_link_libraries(TextAreaTestExe
-    PUBLIC
-        textAreaLib
-)
+#target_link_libraries(TextAreaTestExe
+#    PUBLIC
+#        textAreaLib
+#)
 
 
 #add_executable(WorldsBestTextEditor

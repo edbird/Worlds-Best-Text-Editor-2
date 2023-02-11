@@ -1,5 +1,5 @@
-#ifndef KEYMAP_HPP
-#define KEYMAP_HPP
+#ifndef KEYMAP_H
+#define KEYMAP_H
 
 
 #include <map>
@@ -349,4 +349,4 @@ class KeyMap
 };
 
 
-#endif // KEYMAP_HPP
+#endif // KEYMAP_H

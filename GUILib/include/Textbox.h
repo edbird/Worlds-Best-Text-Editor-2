@@ -1,12 +1,11 @@
-#ifndef TEXTBOX_HPP
-#define TEXTBOX_HPP
+#ifndef TEXTBOX_H
+#define TEXTBOX_H
 
 
-#include "Functions.hpp"
-#include "GUIObject.hpp"
-#include "Buffer.hpp"
-#include "FontTextureManager.hpp"
-//#include "CharMatrix.hpp"
+#include "Functions.h"
+#include "Buffer.h"
+#include "FontTextureManager.h"
+//#include "CharMatrix.h"
 
 
 #include <SDL.h>
@@ -16,6 +15,7 @@
 #include <string>
 #include <sstream>
 
+#include "GUIObject.h"
 
 class Textbox : public Buffer, public GUIObject
 {

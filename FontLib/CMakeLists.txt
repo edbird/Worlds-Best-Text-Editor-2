@@ -15,7 +15,7 @@ target_link_libraries(fontLib
         fontConfigHelperLib
         resourceLib
         exceptionLib
-        #colorLib
+        colorLib
 )
 
 

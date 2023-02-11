@@ -39,10 +39,7 @@
 #include "SDLHelper.h"
 
 
-////#include "Color.h"
-// TODO: fix cmake problem
-#include "../ColorLib/Color.h"
-
+#include "ColorLib.h"
 #include "WriteFunctions.h"
 
 
@@ -148,7 +145,7 @@ int main(int argc, char* argv[])
 
         fontFilenameLiberationMono = fontConfigGetFontFilename(stringLiberationMono);
         std::cout << "fontFilenameLiberationMono=" << fontFilenameLiberationMono << std::endl;
-        fontManager.loadFontTexture(windowId, fontFilenameLiberationMono, 12, COLOR_BLACK, validCharsLiberationMono);
+        fontManager.loadFontTexture(windowId, fontFilenameLiberationMono, 12, ColorPalette::getStatic(ColorName::BLACK), validCharsLiberationMono);
 
 
         // This function does the same as the above, however instead of
@@ -163,7 +160,7 @@ int main(int argc, char* argv[])
 
         std::string validCharsTimesNewRoman;
         fontFilenameTimesNewRoman = fontManager.loadFontTextureFromDescription(
-            windowId, stringTimesNewRoman, 24, COLOR_BLACK, validCharsTimesNewRoman);
+            windowId, stringTimesNewRoman, 24, ColorPalette::getStatic(ColorName::BLACK), validCharsTimesNewRoman);
 
         std::cout << "fontFilenameTimesNewRoman=" << fontFilenameTimesNewRoman << std::endl;
         #endif
@@ -173,7 +170,7 @@ int main(int argc, char* argv[])
         std::cout << "loadFontTextureFromDescription: " << stringInvalid << std::endl;
         std::string validCharsInvalid;
 
-        fontManager.loadFontTextureFromDescription(windowId, stringInvalid, 12, COLOR_BLACK, validCharsInvalid);
+        fontManager.loadFontTextureFromDescription(windowId, stringInvalid, 12, ColorPalette::getStatic(ColorName::BLACK), validCharsInvalid);
             // seems to return something random
 
         std::cout << "validCharsInvalid.size()="
@@ -204,7 +201,7 @@ int main(int argc, char* argv[])
 
     std::cout << "GetFontTexture: " << fontFilenameLiberationMono << " 12" << std::endl;
     std::shared_ptr<FontTexture> fontTextureLiberationMono = fontManager.getFontTexture(
-        windowId, fontFilenameLiberationMono, 12, COLOR_BLACK);
+        windowId, fontFilenameLiberationMono, 12, ColorPalette::getStatic(ColorName::BLACK));
 
 
     // load a larger version of Liberation Mono font
@@ -212,7 +209,7 @@ int main(int argc, char* argv[])
     try
     {
         std::cout << "loadFontTexture: " << "Liberation Mono (24)" << std::endl;
-        fontManager.loadFontTexture(windowId, fontFilenameLiberationMono, 24, COLOR_BLACK, validCharsLiberationMonoLarge);
+        fontManager.loadFontTexture(windowId, fontFilenameLiberationMono, 24, ColorPalette::getStatic(ColorName::BLACK), validCharsLiberationMonoLarge);
         std::cout << std::endl;
     }
     catch(const SDLLibException &e)
@@ -230,12 +227,12 @@ int main(int argc, char* argv[])
     }
     std::cout << "getFontTexture: " << fontFilenameLiberationMono << " 24" << std::endl;
     std::shared_ptr<FontTexture> fontTextureLiberationMonoLarge(
-        fontManager.getFontTexture(windowId, fontFilenameLiberationMono, 24, COLOR_BLACK));
+        fontManager.getFontTexture(windowId, fontFilenameLiberationMono, 24, ColorPalette::getStatic(ColorName::BLACK)));
 
     # if FONT_TIMES_NEW_ROMAN
     std::cout << "getFontTexture: " << fontFilenameTimesNewRoman << " 24" << std::endl;
     std::shared_ptr<FontTexture> fontTextureTimesNewRoman(
-        fontManager.getFontTexture(windowId, fontFilenameTimesNewRoman, 24, COLOR_BLACK));
+        fontManager.getFontTexture(windowId, fontFilenameTimesNewRoman, 24, ColorPalette::getStatic(ColorName::BLACK)));
     #endif
 
 
@@ -254,7 +251,7 @@ int main(int argc, char* argv[])
 
 
     // continue to render stuff
-    SDL_Color COLOR_BACKGROUND = COLOR_WHITE;
+    SDL_Color COLOR_BACKGROUND = ColorPalette::getStatic(ColorName::WHITE);
 
     std::cout << "Main loop" << std::endl;
 
@@ -324,7 +321,7 @@ int main(int argc, char* argv[])
                 fontTextureLiberationMono,
                 c, t_pos_x, pos_y + 40,
                 true,
-                COLOR_GREEN);
+                ColorPalette::getStatic(ColorName::GREEN));
         }
 
         // create a test string with all possible ASCII symbols
@@ -359,8 +356,8 @@ int main(int argc, char* argv[])
                 fontTextureLiberationMonoLarge,
                 allSymbols,
                 t_pos_x, t_pos_y, true,
-                COLOR_RED,
-                COLOR_GREEN);
+                ColorPalette::getStatic(ColorName::RED),
+                ColorPalette::getStatic(ColorName::GREEN));
 
             t_pos_y += fontTextureLiberationMonoLarge->getFontLineSkip();
         }
@@ -376,8 +373,7 @@ int main(int argc, char* argv[])
             mystring, t_pos_x, pos_y + 80,
             false);
         #endif
-        
-
+    
 
         SDL_RenderPresent(renderer.get());
 

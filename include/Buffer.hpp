@@ -1,5 +1,5 @@
-#ifndef BUFFER_HPP
-#define BUFFER_HPP
+#ifndef BUFFER_H
+#define BUFFER_H
 
 
 #include <string>
@@ -10,7 +10,7 @@
 #include <memory>
 
 
-#include "Cursor.hpp"
+#include "Cursor.h"
 
 
 #define DEBUG 1
@@ -114,4 +114,4 @@ class Buffer
 };
 
 
-#endif // BUFFER_HPP
+#endif // BUFFER_H

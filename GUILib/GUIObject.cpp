@@ -1,5 +1,8 @@
-#include "GUIObject.hpp"
+#include "GUIObject.h"
 
+#include "SDLHelper.h"
+
+#include "ServiceLocator.h"
 
 GUIObject::GUIObject(const int windowId)
     : mWindowId(windowId)
@@ -7,7 +10,7 @@ GUIObject::GUIObject(const int windowId)
     , mPosY{0}
     , mSizeX{0}
     , mSizeY{0}
-    , mColor{0, 0, 0}
+    , mBackgroundColor{0, 0, 0}
 {
 }
 
@@ -18,9 +21,11 @@ GUIObject::GUIObject(const int windowId, const int size_x, const int size_y)
     , mPosY{0}
     , mSizeX{size_x}
     , mSizeY{size_y}
-    , mColor{0, 0, 0}
+    , mBackgroundColor{0, 0, 0}
 {
 }
+// This constructor doesn't make any sense in the context of objects which have
+// their size automatically determinated by their contents
 
 
 GUIObject::GUIObject(const int windowId, const int pos_x, const int pos_y, const int size_x, const int size_y)
@@ -29,22 +34,59 @@ GUIObject::GUIObject(const int windowId, const int pos_x, const int pos_y, const
     , mPosY{pos_y}
     , mSizeX{size_x}
     , mSizeY{size_y}
-    , mColor{0, 0, 0}
+    , mBackgroundColor{0, 0, 0}
 {
 }
 
 
-void GUIObject::drawBackground()
+void GUIObject::setWindowId(const int windowId)
 {
-    auto renderer(ServiceLocator::getRenderer());
+    mWindowId = windowId;
+}
 
-    if(mSizeX > 0 && mSizeY > 0)
+int GUIObject::getWindowId() const
+{
+    return mWindowId;
+}
+
+
+void GUIObject::draw() const
+{
+    // This part of the drawing algorithm (initialization) is the same for
+    // all GUI objects
+    auto sdlResourceManager(ServiceLocator::getSDLResourceManager());
+    auto renderer(sdlResourceManager->getWindowRenderer(getWindowId()));
+
+    // Class specific behaviour is specified by the overridable function
+    // virtualDraw. The purpose of this function is to specifiy the
+    // specifics of the overall drawing algorithm.
+    virtualDraw(renderer);
+}
+
+void GUIObject::virtualDraw(std::shared_ptr<SDL_Renderer> renderer) const
+{
+    // Base class GUIObject only has one step in the drawing algorithm:
+    // Draw the background
+    drawBackground(renderer);
+}
+
+void GUIObject::drawBackground(std::shared_ptr<SDL_Renderer> renderer) const
+{
+    // This function is virtual but it is not expected to be overriden by
+    // most GUI objects
+    if(width() > 0 && height() > 0)
     {
         // draw background
-        SDL_Rect rect{posX() + x_off, posY() + y_off, Width(), Height()};
-        SDL_SetRenderDrawColor(renderer, _background_color_r_, _background_color_g_, _background_color_b_, 0xFF);
-        SDL_RenderFillRect(renderer, &rect);
+        SDL_Rect rect{getDrawPosX(), getDrawPosY(), width(), height()};
+        SDL_SetRenderDrawColor(renderer.get(), getBackgroundColor());
+        SDL_RenderFillRect(renderer.get(), &rect);
     }
+}
+
+
+void GUIObject::processEvent(const Json::Value &event)
+{
+    // Do nothing by default
 }
 
 
@@ -53,10 +95,20 @@ int GUIObject::posX() const
     return mPosX;
 }
 
-
 int GUIObject::posY() const
 {
     return mPosY;
+}
+
+
+int GUIObject::getDrawPosX() const
+{
+    return mPosX + mOffsetX;
+}
+
+int GUIObject::getDrawPosY() const
+{
+    return mPosY + mOffsetY;
 }
 
 
@@ -64,7 +116,6 @@ int GUIObject::width() const
 {
     return mSizeX;
 }
-
 
 int GUIObject::height() const
 {
@@ -140,14 +191,18 @@ void GUIObject::setHeight(const int size_y)
 }
 
 
-void GUIObject::SetAnchor(const Anchor_e anchor)
+void GUIObject::setAnchor(const Anchor_e anchor)
 {
     mAnchor = anchor;
 }
 
 
-void GUIObject::setBackgroundColor(const SDL_Color color)
+void GUIObject::setBackgroundColor(const SDL_Color backgroundColor)
 {
-    mColor = color;
+    mBackgroundColor = backgroundColor;
 }
 
+SDL_Color GUIObject::getBackgroundColor() const
+{
+    return mBackgroundColor;
+}

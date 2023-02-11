@@ -1,8 +1,8 @@
-#ifndef FONTTEXTUREMANAGER_HPP
-#define FONTTEXTUREMANAGER_HPP
+#ifndef FONTTEXTUREMANAGER_H
+#define FONTTEXTUREMANAGER_H
 
 
-#include "ColorPalette.hpp"
+#include "ColorPalette.h"
 
 
 #include <SDL_ttf.h>
@@ -213,4 +213,4 @@ class FontTextureManager
 };
 
 
-#endif // FONTTEXTUREMANAGER_HPP
+#endif // FONTTEXTUREMANAGER_H

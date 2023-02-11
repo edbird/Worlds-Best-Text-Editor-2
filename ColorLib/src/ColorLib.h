@@ -8,11 +8,15 @@
 #include <map>
 #include <optional>
 #include <cstdint>
+#include <string>
 
+// This isn't directly used here, but it should be available to any
+// source files which use the ColorLib
+#include "SDLHelper.h"
 
 // An enumeration which can be used within code
 // to select by a name instead of an integer id
-enum class ColorName_e : uint32_t
+enum class ColorName : uint32_t
 {
     BLACK = 0,
     RED = 1,
@@ -33,22 +37,22 @@ enum class ColorName_e : uint32_t
 
 
 // Map enum names to string names, used for initialization
-static constexpr std::map<ColorName_e, std::string> mapColorEnumNameToStringName {
-    {ColorName_e::BLACK,        "black"},
-    {ColorName_e::RED,          "red"},
-    {ColorName_e::GREEN,        "green"},
-    {ColorName_e::BLUE,         "blue"},
-    {ColorName_e::YELLOW,       "yellow"},
-    {ColorName_e::CYAN,         "cyan"},
-    {ColorName_e::MAGENTA,      "magenta"},
-    {ColorName_e::WHITE,        "white"},
+static const std::map<ColorName, std::string> mapColorEnumNameToStringName {
+    {ColorName::BLACK,          "black"},
+    {ColorName::RED,            "red"},
+    {ColorName::GREEN,          "green"},
+    {ColorName::BLUE,           "blue"},
+    {ColorName::YELLOW,         "yellow"},
+    {ColorName::CYAN,           "cyan"},
+    {ColorName::MAGENTA,        "magenta"},
+    {ColorName::WHITE,          "white"},
 
-    {ColorName_e::GREY,         "grey"},
+    {ColorName::GREY,           "grey"},
 
-    {ColorName_e::BACKGROUND,   "background"},
-    {ColorName_e::FOREGROUND,   "foreground"},
-    {ColorName_e::TEXT_DEFAULT, "text_default"},
-    {ColorName_e::CURRENT_LINE_BACKGROUND, "current_line_background"}
+    {ColorName::BACKGROUND,     "background"},
+    {ColorName::FOREGROUND,     "foreground"},
+    {ColorName::TEXT_DEFAULT,   "text_default"},
+    {ColorName::CURRENT_LINE_BACKGROUND, "current_line_background"}
 };
 
 
@@ -64,11 +68,13 @@ public:
     // TODO: exceptions or better to return optional with a tryGetVersion?
     SDL_Color get(const std::string& name) const;
 
-    SDL_Color get(const ColorName_e name) const;
+    SDL_Color get(const ColorName name) const;
+
+    static SDL_Color getStatic(const ColorName name);
 
     std::optional<SDL_Color> tryGet(const std::string& name) const;
 
-    std::optional<SDL_Color> tryGet(const ColorName_e name) const;
+    std::optional<SDL_Color> tryGet(const ColorName name) const;
 
 
 private:
@@ -78,7 +84,7 @@ private:
     void initDefault();
 
     // Map the color enumeration to an SDL color object
-    std::map<ColorName_e, SDL_Color> mColorMapByEnumName;
+    std::map<ColorName, SDL_Color> mColorMapByEnumName;
 
     // Map a string name to an SDL color object
     std::map<std::string, SDL_Color> mColorMapByStringName;

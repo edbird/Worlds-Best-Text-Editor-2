@@ -2,8 +2,8 @@
 #define STATUSBAR_HPP
 
 
-#include "Functions.hpp"
-#include "GUIObject.hpp"
+//#include "Functions.h"
+#include "GUIObject.h"
 
 
 #include <SDL.h>

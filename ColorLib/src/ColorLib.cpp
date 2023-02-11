@@ -1,6 +1,27 @@
 #include <ColorLib.h>
 
 
+
+static const std::map<ColorName, SDL_Color> mapColorEnumNameToSDLColor {
+    {ColorName::BLACK,          SDL_Color(0, 0, 0, 255)},
+    {ColorName::RED,            SDL_Color(255, 0, 0, 255)},
+    {ColorName::GREEN,          SDL_Color(0, 255, 0, 255)},
+    {ColorName::BLUE,           SDL_Color(0, 0, 255, 255)},
+    {ColorName::YELLOW,         SDL_Color(255, 255, 0, 255)},
+    {ColorName::CYAN,           SDL_Color(0, 255, 255, 255)},
+    {ColorName::MAGENTA,        SDL_Color(255, 0, 255, 255)},
+    {ColorName::WHITE,          SDL_Color(255, 255, 255, 255)},
+
+    {ColorName::GREY,           SDL_Color(127, 127, 127, 255)},
+
+    {ColorName::BACKGROUND,     SDL_Color(0xCC, 0xCC, 0xCC, 0xFF)},
+    {ColorName::FOREGROUND,     SDL_Color(0, 0, 0, 255)},
+    {ColorName::TEXT_DEFAULT,   SDL_Color(0, 0, 0, 255)},
+    {ColorName::CURRENT_LINE_BACKGROUND, SDL_Color(0xDD, 0xDD, 0xFF, 0xFF)}
+};
+
+
+
 ColorPalette::ColorPalette()
 {
     // initialize default colors
@@ -23,9 +44,14 @@ SDL_Color ColorPalette::get(const std::string& name) const
 }
 
 
-SDL_Color ColorPalette::get(const ColorName_e name) const
+SDL_Color ColorPalette::get(const ColorName name) const
 {
     return mColorMapByEnumName.at(name);
+}
+
+SDL_Color ColorPalette::getStatic(const ColorName name)
+{
+    return mapColorEnumNameToSDLColor.at(name);
 }
 
 
@@ -42,7 +68,7 @@ std::optional<SDL_Color> ColorPalette::tryGet(const std::string& name) const
 }
 
 
-std::optional<SDL_Color> ColorPalette::tryGet(const ColorName_e name) const
+std::optional<SDL_Color> ColorPalette::tryGet(const ColorName name) const
 {
     if(mColorMapByEnumName.count(name))
     {
@@ -67,22 +93,24 @@ void ColorPalette::initFromFile()
 
 void ColorPalette::initDefault()
 {
+    // TODO: load static data first from map mapColorEnumNameToSDLColor
+
     // Load enumerations
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::BLACK,   {   0,      0,      0} ));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::RED,     {   255,    0,      0} ));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::GREEN,   {   0,    255,      0} ));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::BLUE,    {   0,      0,    255} ));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::YELLOW,  { 255,    255,      0} ));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::CYAN,    {   0,    255,    255} ));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::MAGENTA, { 255,      0,    255} ));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::WHITE,   { 255,    255,    255} ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::BLACK,     SDL_Color(   0,      0,      0,     255) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::RED,       SDL_Color(   255,    0,      0,     255) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::GREEN,     SDL_Color(   0,    255,      0,     255) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::BLUE,      SDL_Color(   0,      0,    255,     255) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::YELLOW,    SDL_Color( 255,    255,      0,     255) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::CYAN,      SDL_Color(   0,    255,    255,     255) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::MAGENTA,   SDL_Color( 255,      0,    255,     255) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::WHITE,     SDL_Color( 255,    255,    255,     255) ));
 
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::GREY,    { 127,    127,    127} ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::GREY,      SDL_Color( 127,    127,    127,     255) ));
 
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::BACKGROUND, {0xCC, 0xCC, 0xCC}));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::FOREGROUND, {0, 0, 0}));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::TEXT_DEFAULT, {0, 0, 0}));
-    mColorMapByEnumName.insert(std::make_pair(ColorName_e::CURRENT_LINE_BACKGROUND, {0xDD, 0xDD, 0xFF}));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::BACKGROUND,    SDL_Color(0xCC, 0xCC, 0xCC, 0xFF) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::FOREGROUND,    SDL_Color(0, 0, 0, 255) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::TEXT_DEFAULT,  SDL_Color(0, 0, 0, 255) ));
+    mColorMapByEnumName.insert(std::make_pair(ColorName::CURRENT_LINE_BACKGROUND, SDL_Color(0xDD, 0xDD, 0xFF, 0xFF) ));
 
     // Load string names
     for(const auto [enumName, color] : mColorMapByEnumName)

@@ -1,11 +1,11 @@
-#ifndef KEYBOARD_HPP
-#define KEYBOARD_HPP
+#ifndef KEYBOARD_H
+#define KEYBOARD_H
 
 #include <map>
 
 
-#include "KeyMap.hpp"
-#include "SDLK_KeyMap.hpp"
+#include "KeyMap.h"
+#include "SDLK_KeyMap.h"
 
 
 // This class "wraps" the SDL keyboard input functionality
@@ -476,4 +476,4 @@ class Keyboard
 
 };
 
-#endif // KEYBOARD_HPP
+#endif // KEYBOARD_H

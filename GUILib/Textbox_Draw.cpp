@@ -1,4 +1,4 @@
-#include "Textbox.hpp"
+#include "Textbox.h"
 
 void Textbox::Draw(SDL_Renderer *const renderer, const Uint32 timer) const
 {

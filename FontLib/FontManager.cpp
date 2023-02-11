@@ -50,6 +50,7 @@ void FontManager::loadFontTexture(
     const std::string& fontFullPath,
     const int fontSize,
     const SDL_Color color,
+    std::string &fontUniqueKeyString,
     std::string& validChars)
 {
     /*
@@ -151,6 +152,7 @@ void FontManager::loadFontTexture(
                 "Error in loadFontTexture(): Class FontManager failed to initialize. Probably the TTF library failed to initialize");
         }
 
+        fontUniqueKeyString = uniqueKey;
     }
     else
     {
@@ -168,13 +170,13 @@ std::string FontManager::loadFontTextureFromDescription(
     const std::string& fontFilenameSearchDescription,
     const int fontSize,
     const SDL_Color color,
-    std::string &validChars
-    )
+    std::string &fontUniqueKeyString,
+    std::string &validChars)
 {
     std::string fontFullPath =
         fontConfigGetFontFilename(fontFilenameSearchDescription);
 
-    loadFontTexture(windowId, fontFullPath, fontSize, color, validChars);
+    loadFontTexture(windowId, fontFullPath, fontSize, color, fontUniqueKeyString, validChars);
     std::cout << "finished LoadFromTexture function, return: " << fontFullPath << std::endl;
 
     return fontFullPath;
@@ -195,7 +197,25 @@ std::shared_ptr<FontTexture> FontManager::getFontTexture(
         .windowId = windowId
     };
 
-    std::string uniqueKey(fontKey.getKeyString());
+    const std::string uniqueKey(fontKey.getKeyString());
+
+    return getFontTexture(uniqueKey);
+}
+
+
+std::shared_ptr<FontTexture> FontManager::getFontTexture(
+    const FontKey& fontKey) const
+{
+    const std::string uniqueKey(fontKey.getKeyString());
+
+    return getFontTexture(uniqueKey);
+}
+
+
+std::shared_ptr<FontTexture> FontManager::getFontTexture(
+    const std::string &fontUniqueKeyString) const
+{
+    const std::string& uniqueKey(fontUniqueKeyString);
 
     if(mapFontTexture.find(uniqueKey) == mapFontTexture.cend())
     {
@@ -210,7 +230,6 @@ std::shared_ptr<FontTexture> FontManager::getFontTexture(
         return mapFontTexture.at(uniqueKey);
     }
 }
-
 
 
 // TODO: in order for this function to check if each character

@@ -1,5 +1,5 @@
-#ifndef FUNCTIONS_HPP
-#define FUNCTIONS_HPP
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
 
 #include <SDL.h>
 
@@ -8,4 +8,4 @@ void print_char_texture(SDL_Renderer *const renderer,
                         const SDL_Rect& src_rect,
                         SDL_Rect& dst_rect);
 
-#endif // FUNCTIONS_HPP
+#endif // FUNCTIONS_H

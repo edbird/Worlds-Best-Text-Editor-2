@@ -1,8 +1,6 @@
-#include "Label.h"
+    #include "Label.h"
 
-
-#include "Functions.hpp"
-#include "GUIObject.hpp"
+#include "GUIObject.h"
 
 
 #include <SDL.h>
@@ -12,26 +10,52 @@
 #include <string>
 #include <sstream>
 
+#include "ColorLib.h"
 
 
 
-
-Label::Label(const FontTextureManager& ftm)
-    : GUIObject()
-    , _ftm_{ftm}
-    , _anchor_{LabelAnchor::TOP_LEFT}
+Label::Label(const int windowId)
+    : GUIObject(windowId)
 {
-    set_size();
+    initializeFontManager();
+
+    // TODO
+    //set_size();
 }
 
 
-Label::Label(const std::string& text, const FontTextureManager& ftm)
-    : GUIObject()
-    , _text_{text}
-    , _ftm_{ftm}
-    , _anchor_{LabelAnchor::TOP_LEFT}
+Label::Label(const int windowId, const int posX, const int posY, const std::string& text)
+    : GUIObject(windowId, posX, posY, 0, 0)
+    , mText{text}
 {
-    set_size();
+    initializeFontManager();
+
+    setText(text);
+
+    // TODO
+    //set_size();
+}
+
+void Label::initializeFontManager()
+{
+    std::string validChars;
+    const std::string fontName("Liberation Mono");
+    const int fontSize = 12;
+
+    // This data is used to reference the font to load
+    // the font texture required for drawing
+    std::string fontUniqueKeyString;
+
+    mFontManager.loadFontTextureFromDescription(
+        getWindowId(),
+        fontName,
+        fontSize,
+        ColorPalette::getStatic(ColorName::BLACK),
+        fontUniqueKeyString,
+        validChars
+    );
+
+    mFontUniqueKeyString = fontUniqueKeyString;
 }
 
 /*
@@ -65,9 +89,24 @@ int Height() const
 */
 
 
+void Label::processEvent(const Json::Value &event)
+{
+    // Do nothing
+}
+
+
 void Label::setText(const std::string& text)
 {
+    // TODO: check that chars in text are valid using
+    // validChars which is initialized in the function
+    // initializeFontManager
+    
     mText = text;
+
+    // Initialize a texture using the specified text
+    // TODO
+    /*std::shared_ptr<FontTexture> fontTexture = fontManager.getFontTexture(
+        windowId, fontFilenameLiberationMono, 12, ColorPalette::getStatic(ColorName::BLACK));*/
 
     autoSetSize();
 }
@@ -79,28 +118,36 @@ void Label::autoSetSize()
 {
 
     // get reference to texture chars size and texture pointers
-    const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
-    const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
+    ////const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
+    ////const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
     
-    int c_w{texture_chars_size.at(' ').w};
-    int c_h{texture_chars_size.at(' ').h};
+    ////int c_w{texture_chars_size.at(' ').w};
+    ////int c_h{texture_chars_size.at(' ').h};
 
     //GUIObject::_size_x_ = c_w * _text_.size();
     //GUIObject::_size_y_ = c_h;
 
-    SetSize(c_w * _text_.size(), c_h);
+    ////SetSize(c_w * _text_.size(), c_h);
 
 }
 
-void Label::Draw(SDL_Renderer *const renderer, const Uint32 timer) const
+void Label::virtualDraw(std::shared_ptr<SDL_Renderer> renderer) const
 {
-    drawBackground();
+    drawBackground(renderer);
 
-    autoSetOffset();
+    // TODO
+    //autoSetOffset();
 
     // Get font texuure manager from service locator
 
 
+    const auto fontTexture = mFontManager.getFontTexture(mFontUniqueKeyString);
+
+    int x = getDrawPosX();
+    const int y = getDrawPosY();
+    writeString(renderer, fontTexture, mText, x, y, true);
+
+#if 0
     // get reference to texture chars size and texture pointers
     const std::map<const char, SDL_Texture*>& texture_chars{_ftm_.GetCharTexture()};
     const std::map<const char, SDL_Rect>& texture_chars_size{_ftm_.GetCharSize()};
@@ -127,6 +174,7 @@ void Label::Draw(SDL_Renderer *const renderer, const Uint32 timer) const
         // TODO: can print off screen
         dst_rect.x += dst_rect.w;
     }
+#endif
 
 }
 
