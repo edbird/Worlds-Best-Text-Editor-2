@@ -31,3 +31,5 @@ sudo apt install libwayland-dev wayland-protocols libxkbcommon-dev libegl1-mesa-
 
 // might not be used?
 sudo apt install libdecor-0-dev
+
+sudo apt install libtool
