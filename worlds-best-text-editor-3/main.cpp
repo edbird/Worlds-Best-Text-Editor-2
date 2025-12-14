@@ -1,5 +1,7 @@
 #include "spdlog_util.hpp"
 
+#include "color_util.hpp"
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_gpu.h>
@@ -163,7 +165,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if (!SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255)) {
+        if (!SetRenderDrawColor(renderer, COLOR_BLACK)) {
             SPDLOG_ERROR("failed to set renderer drawing color");
         }
 
@@ -172,7 +174,7 @@ int main(int argc, char* argv[]) {
             SPDLOG_ERROR("render clear failed: {}", error);
         }
 
-        if (!SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255)) {
+        if (!SetRenderDrawColor(renderer, COLOR_RED)) {
             SPDLOG_ERROR("failed to set renderer drawing color");
         }
 
