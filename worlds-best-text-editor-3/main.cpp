@@ -188,7 +188,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // TODO: this will attempt to destroy a window even if one is not created !
+    SPDLOG_INFO("destroy renderer");
+    SDL_DestroyRenderer(renderer);
+
     SPDLOG_INFO("destroy window");
     SDL_DestroyWindow(window);
 
