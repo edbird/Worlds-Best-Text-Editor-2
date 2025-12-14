@@ -6,6 +6,9 @@
 #include <SDL3/SDL_version.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
+#include <algorithm>
+
+
 void query_sdl_version() {
     const auto sdl_version = SDL_VERSION;
     SPDLOG_INFO("SDL Version: {}", sdl_version);
@@ -218,7 +221,8 @@ bool initialize_ttf_font(ApplicationResources &application_resources) {
 
     const float ttf_font_ptsize = 10.0f;
     //const auto ttf_font_file_path = "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf";
-    const auto ttf_font_file_path = "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf";
+    //const auto ttf_font_file_path = "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf";
+    const auto ttf_font_file_path = "C:/Windows/Fonts/DejaVuSansMono.ttf";
     const auto ttf_font = TTF_OpenFont(ttf_font_file_path, ttf_font_ptsize);
     if (!ttf_font) {
         const auto error = SDL_GetError();

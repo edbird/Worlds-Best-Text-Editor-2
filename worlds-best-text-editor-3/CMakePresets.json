@@ -26,6 +26,19 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
             }
+        },
+        {
+            "name": "debug-configure-windows",
+            "displayName": "Debug configure Windows",
+            "description": "debug configure Windows",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_CXX_STANDARD": "23",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            }
         }
     ],
     "buildPresets": [
@@ -40,6 +53,12 @@
             "configurePreset": "release-configure",
             "displayName": "Release build",
             "description": "release build"
+        },
+        {
+            "name": "debug-build-windows",
+            "configurePreset": "debug-configure-windows",
+            "displayName": "Debug build Windows",
+            "description": "debug build Windows"
         }
     ]
 }

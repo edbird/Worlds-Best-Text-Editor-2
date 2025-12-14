@@ -16,7 +16,7 @@
 #include <print>
 #include <format>
 
-
+// TODO: change the video driver and renderer driver for windows
 
 int main(int argc, char* argv[]) {
 
