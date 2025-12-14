@@ -16,3 +16,12 @@ export VCPKG_ROOT=/path/to/vcpkg
 export PATH=$VCPKG_ROOT:$PATH
 ```
 
+
+x11
+sudo apt install libx11-dev libxft-dev libxext-dev
+
+wayland
+sudo apt install libwayland-dev libxkbcommon-dev libegl1-mesa-dev
+
+ibus
+sudo apt install libibus-1.0-dev

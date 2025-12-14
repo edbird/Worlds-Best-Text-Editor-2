@@ -34,5 +34,8 @@
 # CMake build output
 **/build
 
+# VCPKG
+**/vcpkg_installed
+
 # VS Code
 **/.vscode
