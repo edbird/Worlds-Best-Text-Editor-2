@@ -337,6 +337,8 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    SDL_SetTextureScaleMode(text_texture, SDL_SCALEMODE_NEAREST);
+
     SDL_DestroySurface(text_surface);
 
     for (bool exit = false; exit == false; ) {
@@ -370,16 +372,23 @@ int main(int argc, char* argv[]) {
         int w = 0;
         int h = 0;
         SDL_FRect dst;
-        const float scale = 1.0;
+        {
+            const float scale = 4.0;
+            SDL_SetRenderScale(renderer, scale, scale);
+        }
         SDL_GetRenderOutputSize(renderer, &w, &h);
-        SDL_SetRenderScale(renderer, scale, scale);
         SDL_GetTextureSize(text_texture, &dst.w, &dst.h);
-        dst.x = 200;
-        dst.y = 200;
+        dst.x = 50;
+        dst.y = 50;
 
         if (!SDL_RenderTexture(renderer, text_texture, nullptr, &dst)) {
             const auto error = SDL_GetError();
             SPDLOG_ERROR("failed to render texture: {}", error);
+        }
+
+        {
+            const float scale = 1.0;
+            SDL_SetRenderScale(renderer, scale, scale);
         }
 
         if (!SDL_RenderPresent(renderer)) {
