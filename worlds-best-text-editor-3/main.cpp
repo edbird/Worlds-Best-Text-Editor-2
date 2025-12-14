@@ -6,6 +6,7 @@
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3_ttf/SDL_ttf.h>
 // #include <SDL3/SDL_render.h>
 // #include <SDL3/SDL_error.h>
 // #include <SDL3/SDL_init.h>
@@ -56,6 +57,15 @@ void query_render_drivers() {
     SPDLOG_INFO("Available render drivers: {}", render_driver_list_string);
 }
 
+struct ApplicationResources {}; // <- renamed
+struct InitializedSystems {
+    bool sdl;
+    bool sdl_ttf;
+    std::vector<SDL_Renderer*> sdl_renderer;
+    std::vector<SDL_Window*> sdl_window;
+    // TODO: add others, implement this so that shutdown destructs objects correctly
+    // TODO: add fonts
+};
 
 int main(int argc, char* argv[]) {
 
@@ -122,6 +132,17 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
+    SPDLOG_INFO("SDL TTF library initialize");
+    if (!TTF_Init()) {
+        init_ok = false;
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("SDL TTF init failed: {}", error);
+    }
+    if (!init_ok) {
+        // TODO: will not call the corresponding cleanup functions on failure
+        return -1;
+    }
+
     SPDLOG_INFO("SDL create window");
     const auto window_flags = SDL_WINDOW_RESIZABLE;
     const auto window = SDL_CreateWindow("Worlds Best Text Editor", 800, 600, window_flags);
@@ -156,6 +177,43 @@ int main(int argc, char* argv[]) {
     }
     SPDLOG_INFO("SDL renderer name: {}", renderer_name);
 
+    const float ttf_font_ptsize = 10.0f;
+    const auto ttf_font_file_path = "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf";
+    const auto ttf_font = TTF_OpenFont(ttf_font_file_path, ttf_font_ptsize);
+    if (!ttf_font) {
+        init_ok = false;
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("failed to open ttf font: {}", error);
+    }
+    if (!init_ok) {
+        // TODO: will not cleanup other subsystems correctly
+        return -1;
+    }
+
+    SDL_Surface *text_surface = TTF_RenderText_Solid(ttf_font, "hello world!", 0, COLOR_GREEN);
+    if (!text_surface) {
+        init_ok = false;
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("failed to render ttf font to surface: {}", error);
+    }
+    if (!init_ok) {
+        // TODO: will not cleanup other subsystems correctly
+        return -1;
+    }
+
+    SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+    if (!text_texture) {
+        init_ok = false;
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("failed to convert surface to texture: {}", error);
+    }
+    if (!init_ok) {
+        // TODO: will not cleanup other subsystems correctly
+        return -1;
+    }
+
+    SDL_DestroySurface(text_surface);
+
     for (bool exit = false; exit == false; ) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -184,17 +242,41 @@ int main(int argc, char* argv[]) {
             SPDLOG_ERROR("rendering failed");
         }
 
+        int w = 0;
+        int h = 0;
+        SDL_FRect dst;
+        const float scale = 1.0;
+        SDL_GetRenderOutputSize(renderer, &w, &h);
+        SDL_SetRenderScale(renderer, scale, scale);
+        SDL_GetTextureSize(text_texture, &dst.w, &dst.h);
+        dst.x = 200;
+        dst.y = 200;
+
+        if (!SDL_RenderTexture(renderer, text_texture, nullptr, &dst)) {
+            const auto error = SDL_GetError();
+            SPDLOG_ERROR("failed to render texture: {}", error);
+        }
+
         if (!SDL_RenderPresent(renderer)) {
             const auto error = SDL_GetError();
             SPDLOG_ERROR("render present failed: {}", error);
         }
     }
 
+    SPDLOG_INFO("destroy texture");
+    SDL_DestroyTexture(text_texture);
+
+    SPDLOG_INFO("destroy fonts");
+    TTF_CloseFont(ttf_font);
+
     SPDLOG_INFO("destroy renderer");
     SDL_DestroyRenderer(renderer);
 
     SPDLOG_INFO("destroy window");
     SDL_DestroyWindow(window);
+
+    SPDLOG_INFO("SDL TTF library quit");
+    TTF_Quit();
 
     SPDLOG_INFO("SDL library quit");
     SDL_Quit();

@@ -1,6 +1,7 @@
 {
   "dependencies": [
     "sdl3",
-    "spdlog"
+    "spdlog",
+    "sdl3-ttf"
   ]
 }
