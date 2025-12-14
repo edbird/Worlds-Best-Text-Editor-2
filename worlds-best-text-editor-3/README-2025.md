@@ -25,3 +25,9 @@ sudo apt install libwayland-dev libxkbcommon-dev libegl1-mesa-dev
 
 ibus
 sudo apt install libibus-1.0-dev
+
+all of these were eventually installed
+sudo apt install libwayland-dev wayland-protocols libxkbcommon-dev libegl1-mesa-dev libgl1-mesa-dev libdrm-dev libgbm-dev libx11-dev libxrandr-dev libxcursor-dev libxinerama-dev libxi-dev libxext-dev
+
+// might not be used?
+sudo apt install libdecor-0-dev

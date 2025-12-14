@@ -8,6 +8,7 @@ find_package(SDL3_ttf CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 add_subdirectory(spdlog_util)
+add_subdirectory(application_resources)
 add_subdirectory(color_util)
 
 add_executable(
@@ -20,6 +21,7 @@ target_link_libraries(
     PRIVATE
     #fmt::fmt
     spdlog_util
+    application_resources
     color_util
     SDL3::SDL3
     SDL3_ttf::SDL3_ttf
