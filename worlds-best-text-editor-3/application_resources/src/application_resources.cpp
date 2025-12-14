@@ -217,7 +217,8 @@ bool initialize_renderer(ApplicationResources &application_resources, SDL_Window
 bool initialize_ttf_font(ApplicationResources &application_resources) {
 
     const float ttf_font_ptsize = 10.0f;
-    const auto ttf_font_file_path = "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf";
+    //const auto ttf_font_file_path = "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf";
+    const auto ttf_font_file_path = "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf";
     const auto ttf_font = TTF_OpenFont(ttf_font_file_path, ttf_font_ptsize);
     if (!ttf_font) {
         const auto error = SDL_GetError();
