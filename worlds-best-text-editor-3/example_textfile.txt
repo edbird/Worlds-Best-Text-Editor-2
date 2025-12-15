@@ -23,7 +23,7 @@
 
 // TODO: change the video driver and renderer driver for windows
 
-struct TextFileContainer {
+struct Document {
 
     void write_to_file(const char* filename) {
         std::ofstream ofile(filename);
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
 
     SDL_DestroySurface(text_surface);
 
-    TextFileContainer text_file_container;
+    Document text_file_container;
     text_file_container.read_from_file("example_textfile.txt");
 
     const auto frame_rate_latency = static_cast<Uint32>(1000.0 / 60.0);

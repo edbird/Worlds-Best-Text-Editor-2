@@ -17,13 +17,14 @@
 #include <print>
 #include <format>
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <json/json.h>
 
 // TODO: change the video driver and renderer driver for windows
 
-struct TextFileContainer {
+struct Document {
 
     void write_to_file(const char* filename) {
         std::ofstream ofile(filename);
@@ -66,31 +67,119 @@ struct TextFileContainer {
     std::vector<std::string> lines;
 };
 
-struct TextFileWidthOrganizer {
+struct DocumentLayoutLine {
+    std::size_t line_index;
+    std::string_view text_span;
+};
 
-    TextFileWidthOrganizer(const std::size_t width)
-        : width{width}
+struct DocumentLayout {
+
+    DocumentLayout(const uint64_t width_in_pixels)
+        : width_in_pixels{width_in_pixels}
     {
     }
 
-    void set_width(const std::size_t width) {
-        this->width = width;
+    void set_width(const uint64_t width_in_pixels) {
+        this->width_in_pixels = width_in_pixels;
     }
 
-    void create_from_text_file_container_and_font(
-        const TextFileContainer& text_file_container,
-        TTF_Font* font
-    ) {
-        runs.clear();
-
-        for (const auto& line: text_file_container.lines) {
-
-        }
-    }
-
-    std::size_t width;
-    std::vector<std::string> runs;
+    uint64_t width_in_pixels;
+    std::vector<DocumentLayoutLine> lines;
 };
+
+std::size_t calculate_wrap_length(
+    TTF_Text* ttf_text,
+    const int width_in_pixels,
+    const std::string& line,
+    const std::size_t start
+) {
+
+    // Find the maximum number of characters which can be rendered within the
+    // available space
+
+    const auto lambda = [&line, &start, &ttf_text](const auto& index, const auto &width_in_pixels) -> bool {
+        SPDLOG_INFO("lambda called: index={}, width_in_pixels={}", index, width_in_pixels);
+
+        const auto substring = line.substr(start, index - start);
+
+        if (!TTF_SetTextString(ttf_text, substring, substring.size())) {
+            throw std::runtime_error("TTF_SetTextString failure");
+        }
+        int w = 0;
+        int h = 0;
+        if (!TTF_GetTextSize(ttf_text, &w, &h)) {
+            throw std::runtime_error("TTF_GetTextSize failure");
+        }
+
+        // TODO: check <= here or < ???
+        return w <= width_in_pixels;
+    };
+
+    const auto end = std::lower_bound(
+        start,
+        line.size(),
+        static_cast<std::size_t>(width_in_pixels),
+        lambda
+    );
+
+    // At this point, the end index is known
+
+    const auto substring_view = std::string_view(
+        line.data() + start,
+        line.data() + (end - start)
+    );
+    const auto find_pos = substring_view.find_last_of(' ');
+
+    if (find_pos == std::string::npos) {
+        // not found: the entire line is a single word or part of a single word
+        SPDLOG_INFO("calculate_wrap_length: end of word not found, returning end={}, start={}, end-start={}", end, start, end-start);
+        return end - start;
+    }
+    else {
+        // found
+        SPDLOG_INFO("calculate_wrap_length: end of word found at position {}, returning start={}, find_pos-start={}", find_pos, start, find_pos-start);
+        return find_pos - start;
+    }
+}
+
+DocumentLayout create_document_layout(
+    const Document& text_file_container,
+    TTF_Text* ttf_text,
+    const int width_in_pixels
+) {
+    DocumentLayout document_layout(width_in_pixels);
+
+    std::size_t line_index = 0;
+    for (const auto& line: text_file_container.lines) {
+
+        auto document_layout_line = DocumentLayoutLine();
+        document_layout_line.line_index = line_index;
+
+        std::size_t start = 0;
+        while (start < line.size()) {
+            const std::size_t wrap_length = calculate_wrap_length(
+                ttf_text,
+                width_in_pixels,
+                line,
+                start
+            );
+
+            document_layout_line.text_span = std::string_view(
+                line.data() + start,
+                wrap_length
+            );
+
+            document_layout.lines.push_back(document_layout_line);
+
+            start += wrap_length;
+        }
+
+        ++ line_index;
+    }
+}
+
+// TODO: move this, possibly simpler way to get the value
+//const auto font_line_skip = TTF_GetFontLineSkip(TTF_GetTextFont(text_engine));
 
 int main(int argc, char* argv[]) {
 
@@ -221,7 +310,7 @@ int main(int argc, char* argv[]) {
     const auto text1_length = strlen(text1_string);
     TTF_Text* text1 = TTF_CreateText(text_engine, ttf_font, text1_string, text1_length);
 
-    TextFileContainer text_file_container;
+    Document text_file_container;
     text_file_container.read_from_file("example_textfile.txt");
 
     const auto frame_rate_latency = static_cast<Uint32>(1000.0 / 60.0);
