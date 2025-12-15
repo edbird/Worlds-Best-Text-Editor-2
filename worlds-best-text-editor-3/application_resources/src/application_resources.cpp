@@ -217,12 +217,32 @@ bool initialize_renderer(ApplicationResources &application_resources, SDL_Window
     return true;
 }
 
-bool initialize_ttf_font(
+bool initialize_text_engine(
     ApplicationResources &application_resources,
-    const char* font_path
+    SDL_Renderer* renderer
 ) {
 
-    const float ttf_font_ptsize = 10.0f;
+    SPDLOG_INFO("SDL TTF create text engine");
+    TTF_TextEngine* text_engine = TTF_CreateRendererTextEngine(renderer);
+    if (!text_engine) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("failed to create text engine: {}", error);
+        return false;
+    }
+
+    application_resources.text_engine_list.push_back(text_engine);
+
+    return true;
+}
+
+bool initialize_ttf_font(
+    ApplicationResources &application_resources,
+    const char* font_path,
+    const unsigned int font_size
+) {
+
+    SPDLOG_INFO("SDL TTF create ttf font from path {}, {} size pt", font_path, font_size);
+    const float ttf_font_ptsize = static_cast<float>(font_size);
     const auto ttf_font = TTF_OpenFont(font_path, ttf_font_ptsize);
     if (!ttf_font) {
         const auto error = SDL_GetError();

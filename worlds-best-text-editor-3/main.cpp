@@ -66,6 +66,32 @@ struct TextFileContainer {
     std::vector<std::string> lines;
 };
 
+struct TextFileWidthOrganizer {
+
+    TextFileWidthOrganizer(const std::size_t width)
+        : width{width}
+    {
+    }
+
+    void set_width(const std::size_t width) {
+        this->width = width;
+    }
+
+    void create_from_text_file_container_and_font(
+        const TextFileContainer& text_file_container,
+        TTF_Font* font
+    ) {
+        runs.clear();
+
+        for (const auto& line: text_file_container.lines) {
+
+        }
+    }
+
+    std::size_t width;
+    std::vector<std::string> runs;
+};
+
 int main(int argc, char* argv[]) {
 
     // TODO: no longer required?
@@ -89,6 +115,14 @@ int main(int argc, char* argv[]) {
         return -1;
     }
     const auto font_path{optional_font_path.value()};
+
+    const auto optional_font_size{application_configuration.getFontSize()};
+    if (!optional_font_size) {
+        SPDLOG_ERROR("failed to get font size from application configuration");
+        init_ok = false;
+        return -1;
+    }
+    const auto font_size{optional_font_size.value()};
 
     // not sure if needed?
     SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, "1");
@@ -137,13 +171,21 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    if (!initialize_ttf_font(application_resources, font_path.c_str())) {
+    if (!initialize_text_engine(application_resources, renderer)) {
+        init_ok = false;
+        cleanup(application_resources);
+        return -1;
+    }
+    const auto text_engine = application_resources.text_engine_list.front();
+
+    if (!initialize_ttf_font(application_resources, font_path.c_str(), font_size)) {
         init_ok = false;
         cleanup(application_resources);
         return -1;
     }
     const auto ttf_font = application_resources.ttf_font_list.front();
 
+    #if 0
     SDL_Surface *text_surface = TTF_RenderText_Solid(ttf_font, "hello world!", 0, COLOR_GREEN);
     if (!text_surface) {
         init_ok = false;
@@ -154,7 +196,9 @@ int main(int argc, char* argv[]) {
         // TODO: will not cleanup other subsystems correctly
         return -1;
     }
+    #endif
 
+    #if 0
     SDL_Texture *text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
     if (!text_texture) {
         init_ok = false;
@@ -165,10 +209,17 @@ int main(int argc, char* argv[]) {
         // TODO: will not cleanup other subsystems correctly
         return -1;
     }
+    #endif
 
+    #if 0
     SDL_SetTextureScaleMode(text_texture, SDL_SCALEMODE_NEAREST);
 
     SDL_DestroySurface(text_surface);
+    #endif
+
+    const auto text1_string = "Hello world";
+    const auto text1_length = strlen(text1_string);
+    TTF_Text* text1 = TTF_CreateText(text_engine, ttf_font, text1_string, text1_length);
 
     TextFileContainer text_file_container;
     text_file_container.read_from_file("example_textfile.txt");
@@ -212,6 +263,13 @@ int main(int argc, char* argv[]) {
             SPDLOG_ERROR("rendering failed");
         }
 
+        if (!SetRenderDrawColor(renderer, COLOR_MAGENTA)) {
+            SPDLOG_ERROR("failed to set renderer drawing color");
+        }
+
+        TTF_DrawRendererText(text1, 200, 200);
+
+        #if 0
         int w = 0;
         int h = 0;
         SDL_FRect dst;
@@ -233,6 +291,9 @@ int main(int argc, char* argv[]) {
             const float scale = 1.0;
             SDL_SetRenderScale(renderer, scale, scale);
         }
+        #endif
+
+
 
         if (!SDL_RenderPresent(renderer)) {
             const auto error = SDL_GetError();
@@ -253,8 +314,13 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    #if 0
     SPDLOG_INFO("destroy texture");
     SDL_DestroyTexture(text_texture);
+    #endif
+
+    SPDLOG_INFO("destroy text");
+    TTF_DestroyText(text1);
 
     cleanup(application_resources);
 

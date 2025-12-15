@@ -27,28 +27,11 @@ struct ApplicationConfigurationInitializationJsonParseError : std::runtime_error
 
 struct ApplicationConfiguration {
 
-    ApplicationConfiguration() {
-
-        // Load configuration from json file
-        Json::CharReaderBuilder reader;
-        std::string json_parse_errors;
-
-        const auto config_file_path = "config.json";
-        std::ifstream config_file(config_file_path, std::ifstream::binary);
-        if (!config_file.is_open()) {
-            SPDLOG_ERROR("failed to open configuration file {}", config_file_path);
-            throw ApplicationConfigurationInitializationFileDoesNotExistError(
-                std::format("failed to open configuration file, {} does not exist", config_file_path)
-            );
-        }
-
-        if (!Json::parseFromStream(reader, config_file, &root, &json_parse_errors)) {
-            SPDLOG_ERROR("errors while parsing json document: {}", json_parse_errors);
-            throw ApplicationConfigurationInitializationJsonParseError("errors while parsing json document");
-        }
-    }
+    ApplicationConfiguration();
 
     std::optional<std::string> getFontPath() const;
+
+    std::optional<unsigned int> getFontSize() const;
 
     Json::Value root;
 };

@@ -12,6 +12,7 @@ struct ApplicationResources {
     bool sdl_ttf_init;
     std::vector<SDL_Window*> window_list;
     std::vector<SDL_Renderer*> renderer_list;
+    std::vector<TTF_TextEngine*> text_engine_list;
     std::vector<TTF_Font*> ttf_font_list;
 
     ApplicationResources()
@@ -56,9 +57,15 @@ bool initialize_window(ApplicationResources &application_resources);
 
 bool initialize_renderer(ApplicationResources &application_resources, SDL_Window* const window);
 
+bool initialize_text_engine(
+    ApplicationResources &application_resources,
+    SDL_Renderer* renderer
+);
+
 bool initialize_ttf_font(
     ApplicationResources &application_resources,
-    const char* font_path
+    const char* font_path,
+    const unsigned int font_size
 );
 
 #endif
