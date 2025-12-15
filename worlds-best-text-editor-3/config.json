@@ -1,0 +1,11 @@
+{
+    "font_path_linux": "/usr/share/fonts/truetype/ubuntu/UbuntuMono-R.ttf",
+    "font_path_linux_debian": "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf",
+    "font_path_windows": "C:/Windows/Fonts/DejaVuSansMono.ttf",
+    "font_size": 11,
+    "cursor_blink_delay": 1000,
+    "start_line_number": 1,
+    "target_refresh_rate": 60.0,
+    "default_window_width": 800,
+    "default_window_height": 600
+}

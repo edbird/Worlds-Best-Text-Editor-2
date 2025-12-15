@@ -1,5 +1,6 @@
 #include "spdlog_util.hpp"
 
+#include "application_configuration.hpp"
 #include "application_resources.hpp"
 #include "color_util.hpp"
 
@@ -16,7 +17,13 @@
 #include <print>
 #include <format>
 
+#include <iostream>
+#include <fstream>
+#include <json/json.h>
+
 // TODO: change the video driver and renderer driver for windows
+
+
 
 int main(int argc, char* argv[]) {
 
@@ -26,6 +33,23 @@ int main(int argc, char* argv[]) {
 
     SPDLOG_INFO("Worlds Best Text Editor startup");
 
+    const auto maybe_application_configuration{initialize_application_configuration()};
+    if (!maybe_application_configuration) {
+        SPDLOG_ERROR("failed to initialize application configuration");
+        init_ok = false;
+        return -1;
+    }
+    const auto application_configuration{maybe_application_configuration.value()};
+
+    const auto optional_font_path{application_configuration.getFontPath()};
+    if (!optional_font_path) {
+        SPDLOG_ERROR("failed to get font path from application configuration");
+        init_ok = false;
+        return -1;
+    }
+    const auto font_path{optional_font_path.value()};
+
+    // not sure if needed?
     SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, "1");
     SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR, "1");
 
@@ -39,7 +63,6 @@ int main(int argc, char* argv[]) {
 
     query_video_drivers();
     query_render_drivers();
-
 
     if (!initialize_sdl(application_resources)) {
         init_ok = false;
@@ -73,7 +96,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    if (!initialize_ttf_font(application_resources)) {
+    if (!initialize_ttf_font(application_resources, font_path.c_str())) {
         init_ok = false;
         cleanup(application_resources);
         return -1;
@@ -106,7 +129,7 @@ int main(int argc, char* argv[]) {
 
     SDL_DestroySurface(text_surface);
 
-    const Uint32 frame_rate_latency = 1000.0 / 60.0;
+    const auto frame_rate_latency = static_cast<Uint32>(1000.0 / 60.0);
     const auto performance_counter_frequency = SDL_GetPerformanceFrequency();
     const auto performance_counter_frequency_float = static_cast<double>(performance_counter_frequency);
     auto performance_counter_last = SDL_GetPerformanceCounter();
