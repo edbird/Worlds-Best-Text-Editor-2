@@ -6,8 +6,10 @@ project(worlds-best-text-editor-3)
 find_package(SDL3 CONFIG REQUIRED)
 find_package(SDL3_ttf CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(jsoncpp CONFIG REQUIRED)
 
 add_subdirectory(spdlog_util)
+add_subdirectory(application_configuration)
 add_subdirectory(application_resources)
 add_subdirectory(color_util)
 
@@ -21,8 +23,10 @@ target_link_libraries(
     PRIVATE
     #fmt::fmt
     spdlog_util
+    application_configuration
     application_resources
     color_util
     SDL3::SDL3
     SDL3_ttf::SDL3_ttf
+    JsonCpp::JsonCpp
 )
