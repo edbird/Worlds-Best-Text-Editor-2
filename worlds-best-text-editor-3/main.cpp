@@ -17,6 +17,7 @@
 #include <print>
 #include <format>
 
+#include <ranges>
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -102,7 +103,7 @@ std::size_t calculate_wrap_length(
 
         const auto substring = line.substr(start, index - start);
 
-        if (!TTF_SetTextString(ttf_text, substring, substring.size())) {
+        if (!TTF_SetTextString(ttf_text, substring.c_str(), substring.size())) {
             throw std::runtime_error("TTF_SetTextString failure");
         }
         int w = 0;
@@ -112,15 +113,17 @@ std::size_t calculate_wrap_length(
         }
 
         // TODO: check <= here or < ???
-        return w <= width_in_pixels;
+        return w <= static_cast<int64_t>(width_in_pixels);
     };
 
-    const auto end = std::lower_bound(
-        start,
-        line.size(),
+    const auto integer_range_it = std::views::iota(start, line.size());
+    const auto end_it = std::lower_bound(
+        integer_range_it.begin(),
+        integer_range_it.end(),
         static_cast<std::size_t>(width_in_pixels),
         lambda
     );
+    const auto end = *end_it;
 
     // At this point, the end index is known
 
@@ -176,6 +179,8 @@ DocumentLayout create_document_layout(
 
         ++ line_index;
     }
+
+    return document_layout;
 }
 
 // TODO: move this, possibly simpler way to get the value
