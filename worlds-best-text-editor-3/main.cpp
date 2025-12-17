@@ -27,6 +27,7 @@
 
 #include "document.hpp"
 #include "text_layout_engine.hpp"
+using TextLayoutEngine;
 
 // TODO: move this, possibly simpler way to get the value
 //const auto font_line_skip = TTF_GetFontLineSkip(TTF_GetTextFont(text_engine));
