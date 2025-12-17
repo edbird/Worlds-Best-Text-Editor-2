@@ -26,7 +26,7 @@
 // TODO: change the video driver and renderer driver for windows
 
 #include "document.hpp"
-#include "text_layout_engine.hpp"
+#include "text_layout_engine_measure_string.hpp"
 using namespace TextLayoutEngine;
 
 // TODO: move this, possibly simpler way to get the value
@@ -37,9 +37,9 @@ bool draw_document_layout(
     const int font_line_skip,
     const int screen_width_in_pixels,
     const int screen_height_in_pixels,
-    const DocumentLayout& document_layout
+    const DocumentLayout& document_layout,
+    const int start_line
 ) {
-    const int start_line{10};
     int y = 0;
     const auto dy{font_line_skip};
     for (const auto& [line_index, line]: std::ranges::enumerate_view(document_layout.lines)) {
@@ -49,15 +49,17 @@ bool draw_document_layout(
         }
 
         const auto width_pixels = line.width_pixels;
-        const auto height_pixels = line.height_pixels;
+        //const auto height_pixels = line.height_pixels;
+        const auto height_pixels = font_line_skip;
 
-        if (0 + width_pixels < screen_width_in_pixels) {
+        if (0 + width_pixels <= screen_width_in_pixels) {
 
         }
         else {
+            SPDLOG_WARN("skipping rendering of line {}, width is {} which exceeds maximum width of {}", line_index, 0 + width_pixels, screen_width_in_pixels);
             continue;
         }
-        if (y + height_pixels < screen_height_in_pixels) {
+        if (y + height_pixels <= screen_height_in_pixels) {
 
         }
         else {
@@ -65,6 +67,7 @@ bool draw_document_layout(
         }
 
         const auto line_text = line.text_span;
+        //SPDLOG_INFO("line_text={}", line_text);
         if (!TTF_SetTextString(ttf_text, line_text.data(), line_text.size())) {
             const auto error = SDL_GetError();
             SPDLOG_ERROR("failed to set text string: {}", error);
@@ -214,7 +217,7 @@ int main(int argc, char* argv[]) {
     const int screen_width_in_pixels = 800;
     const int screen_height_in_pixels = 600;
     const auto document_layout = create_document_layout(
-        ttf_text,
+        ttf_font,
         document,
         screen_width_in_pixels
     );
@@ -223,6 +226,8 @@ int main(int argc, char* argv[]) {
     for (const auto& line: document_layout.lines) {
         SPDLOG_INFO("{}", line.text_span);
     }
+
+    int start_line{0};
 
     const auto frame_rate_latency = static_cast<Uint32>(1000.0 / 60.0);
     const auto performance_counter_frequency = SDL_GetPerformanceFrequency();
@@ -281,7 +286,14 @@ int main(int argc, char* argv[]) {
         const auto font_line_skip{TTF_GetFontLineSkip(ttf_font)};
 
         //TTF_DrawRendererText(ttf_text, 200, 200);
-        draw_document_layout(ttf_text, font_line_skip, screen_width_in_pixels, screen_height_in_pixels, document_layout);
+        draw_document_layout(
+            ttf_text,
+            font_line_skip,
+            screen_width_in_pixels,
+            screen_height_in_pixels,
+            document_layout,
+            start_line
+        );
 
         #if 0
         int w = 0;
@@ -325,6 +337,8 @@ int main(int argc, char* argv[]) {
             SPDLOG_INFO("performance metrics: {} frames in 10 seconds, {} frames/sec", frame_count, frame_rate);
             performance_counter_last = performance_counter;
             frame_count = 0;
+
+            ++ start_line;
         }
     }
 
