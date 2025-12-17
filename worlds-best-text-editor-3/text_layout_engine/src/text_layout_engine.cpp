@@ -8,8 +8,9 @@
 #include <algorithm>
 #include <string>
 #include <string_view>
+#include <tuple>
 
-std::size_t calculate_text_width_in_pixels(
+std::tuple<int, int> calculate_text_width_and_height_in_pixels(
     TTF_Text* ttf_text,
     std::string_view text
 ) {
@@ -21,10 +22,10 @@ std::size_t calculate_text_width_in_pixels(
     if (!TTF_GetTextSize(ttf_text, &w, &h)) {
         throw std::runtime_error("TTF_GetTextSize failure");
     }
-    return static_cast<std::size_t>(w);
+    return std::make_tuple(w, h);
 }
 
-std::size_t calculate_number_of_characters_that_fit_on_line(
+std::tuple<std::size_t, int, int> calculate_number_of_characters_that_fit_on_line(
     TTF_Text* ttf_text,
     const std::string& line,
     const std::size_t pos,
@@ -42,7 +43,15 @@ std::size_t calculate_number_of_characters_that_fit_on_line(
         line_view.size()
     );
 
-    const auto lambda = [ttf_text, line_view](const auto end_index, const auto& width_in_pixels) -> bool {
+    int prefix_width_in_pixels{0};
+    int prefix_height_in_pixels{0};
+
+    const auto lambda = [
+        ttf_text,
+        line_view,
+        &prefix_width_in_pixels,
+        &prefix_height_in_pixels
+    ](const auto end_index, const auto& width_in_pixels) -> bool {
         SPDLOG_DEBUG("lambda: end_index={}, ", end_index);
 
         // Convert end index to substring (prefix) view
@@ -50,11 +59,16 @@ std::size_t calculate_number_of_characters_that_fit_on_line(
         SPDLOG_DEBUG("testing prefix: {}", prefix_view);
 
         // Convert the prefix to length in pixels
-        const auto prefix_width_in_pixels{calculate_text_width_in_pixels(ttf_text, prefix_view)};
+        const auto [_prefix_width_in_pixels, _prefix_height_in_pixels]{
+            calculate_text_width_and_height_in_pixels(ttf_text, prefix_view)
+        };
         SPDLOG_DEBUG("prefix_width_in_pixels={}", prefix_width_in_pixels);
 
+        prefix_width_in_pixels = _prefix_width_in_pixels;
+        prefix_height_in_pixels = _prefix_height_in_pixels;
+
         // TODO: check <= here or < ???
-        return prefix_width_in_pixels < static_cast<int64_t>(width_in_pixels);
+        return _prefix_width_in_pixels < static_cast<int64_t>(width_in_pixels);
     };
 
     const auto end_it = std::lower_bound(
@@ -66,7 +80,7 @@ std::size_t calculate_number_of_characters_that_fit_on_line(
     const auto end_index{*end_it};
     SPDLOG_DEBUG("calculate_number_of_characters_that_fit_on_line: calculated end_index={}", end_index);
 
-    return end_index;
+    return std::make_tuple(end_index, prefix_width_in_pixels, prefix_height_in_pixels);
 }
 
 std::size_t find_wrap_position(
@@ -91,7 +105,7 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
 
     while (pos <= line.length()) {
 
-        const auto number_of_characters{
+        const auto [number_of_characters, width_pixels, height_pixels]{
             calculate_number_of_characters_that_fit_on_line(ttf_text, line, pos, width_in_pixels)
         };
 
@@ -135,9 +149,10 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
         const auto document_layout_line{
             TextLayoutEngine::DocumentLayoutLine{
                 .line_index{line_index},
-                //.char_index{char_index},
                 .char_index{pos},
                 .text_span{text_span},
+                .width_pixels{width_pixels},
+                .height_pixels{height_pixels},
             }
         };
 
@@ -169,9 +184,6 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
     std::size_t line_index = 0;
     for (const auto& line: document.lines) {
         SPDLOG_DEBUG("line_index={}", line_index);
-
-        auto document_layout_line = DocumentLayoutLine();
-        document_layout_line.line_index = line_index;
 
         std::vector<DocumentLayoutLine> wrapped_lines = wrap_line(ttf_text, line, line_index, width_in_pixels);
         document_layout.lines.append_range(std::move(wrapped_lines));

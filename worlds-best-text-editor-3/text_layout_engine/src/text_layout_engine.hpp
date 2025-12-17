@@ -12,15 +12,12 @@
 
 namespace TextLayoutEngine {
 
-    // TODO: make members const?
     struct DocumentLayoutLine {
-        std::size_t line_index;
-        std::size_t char_index;
-        std::string_view text_span;
-
-        // TODO: wanted?
-        //int width_pixels;
-        //int height_pixels;
+        const std::size_t line_index;
+        const std::size_t char_index;
+        const std::string_view text_span;
+        const int width_pixels;
+        const int height_pixels;
     };
 
     struct DocumentLayout {
