@@ -156,8 +156,6 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
             }
         };
 
-        // TODO: cache width and height in pixels?
-
         document_layout_lines.push_back(std::move(document_layout_line));
 
         pos = end_pos;
