@@ -27,7 +27,7 @@
 
 #include "document.hpp"
 #include "text_layout_engine.hpp"
-using TextLayoutEngine;
+using namespace TextLayoutEngine;
 
 // TODO: move this, possibly simpler way to get the value
 //const auto font_line_skip = TTF_GetFontLineSkip(TTF_GetTextFont(text_engine));
@@ -157,17 +157,18 @@ int main(int argc, char* argv[]) {
     SDL_DestroySurface(text_surface);
     #endif
 
-    const auto text1_string = "Hello world";
-    const auto text1_length = strlen(text1_string);
-    TTF_Text* text1 = TTF_CreateText(text_engine, ttf_font, text1_string, text1_length);
+    //const auto text1_string = "Hello world";
+    //const auto text1_length = strlen(text1_string);
+    //TTF_Text* ttf_text = TTF_CreateText(text_engine, ttf_font, text1_string, text1_length);
+    TTF_Text* ttf_text = TTF_CreateText(text_engine, ttf_font, "", 0);
 
     Document document;
     document.read_from_file("example_textfile.txt");
 
     const int width_in_pixels = 800;
     const auto document_layout = create_document_layout(
+        ttf_text,
         document,
-        text1,
         width_in_pixels
     );
 
@@ -221,13 +222,13 @@ int main(int argc, char* argv[]) {
             SPDLOG_ERROR("failed to set renderer drawing color");
         }
 
-        //TTF_DrawRendererText(text1, 200, 200);
+        //TTF_DrawRendererText(ttf_text, 200, 200);
         const int dy = TTF_GetFontLineSkip(ttf_font);
         int y = 0;
         for (const auto& line: document_layout.lines) {
             const auto line_text = line.text_span;
-            TTF_SetTextString(text1, line_text.data(), line_text.size()); // TODO: error handling
-            TTF_DrawRendererText(text1, 0.0f, static_cast<float>(y));
+            TTF_SetTextString(ttf_text, line_text.data(), line_text.size()); // TODO: error handling
+            TTF_DrawRendererText(ttf_text, 0.0f, static_cast<float>(y));
             y += dy;
         }
 
@@ -282,7 +283,7 @@ int main(int argc, char* argv[]) {
     #endif
 
     SPDLOG_INFO("destroy text");
-    TTF_DestroyText(text1);
+    TTF_DestroyText(ttf_text);
 
     cleanup(application_resources);
 

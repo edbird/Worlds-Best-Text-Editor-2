@@ -170,9 +170,11 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> TextLayoutEngine::wrap_line(
     // TODO: I modified this to try and work with length 0 lines
     while (pos <= line.length()) {
 
-        auto end_pos{
+        const auto number_of_characters{
             calculate_number_of_characters_that_fit_on_line(ttf_text, line, pos, width_in_pixels)
         };
+
+        auto end_pos{pos + number_of_characters};
         SPDLOG_INFO("end_pos calculated to be {}", end_pos);
 
         // Can't fit a single character, or line has length 0
@@ -222,9 +224,19 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> TextLayoutEngine::wrap_line(
 
         document_layout_lines.push_back(std::move(document_layout_line));
 
+        // if (pos == end_pos) {
+        //     // Either a line of zero length or already at end
+        //     SPDLOG_INFO("pos == end_pos break");
+        //     break;
+        // }
         pos = end_pos;
         SPDLOG_INFO("pos advanced to end_pos = {}", end_pos);
         //char_index = pos;
+
+        if (pos == line.length()) {
+            SPDLOG_INFO("reached end of line, break");
+            break;
+        }
     }
 
     return document_layout_lines;
@@ -247,9 +259,7 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
         document_layout_line.line_index = line_index;
 
         std::vector<DocumentLayoutLine> wrapped_lines = wrap_line(ttf_text, line, line_index, width_in_pixels);
-        document_layout.lines.append_range(
-            std::make_move_iterator(wrapped_lines)
-        );
+        document_layout.lines.append_range(std::move(wrapped_lines));
 
         ++ line_index;
     }
