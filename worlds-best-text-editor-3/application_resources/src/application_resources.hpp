@@ -16,6 +16,7 @@ struct ApplicationResources {
     std::vector<SDL_Renderer*> renderer_list;
     std::vector<TTF_TextEngine*> text_engine_list;
     std::vector<TTF_Font*> ttf_font_list;
+    std::vector<TTF_Text*> ttf_text_list;
 
     ApplicationResources()
         : sdl_init{false}
@@ -69,5 +70,7 @@ bool initialize_ttf_font(
     const char* font_path,
     const unsigned int font_size
 );
+
+// TODO write function initialize_ttf_text
 
 #endif

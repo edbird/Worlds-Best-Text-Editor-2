@@ -1,10 +1,13 @@
 #include "spdlog_util.hpp"
 
+#include "performance_util.hpp"
 #include "application_configuration.hpp"
 #include "window_geometry.hpp"
 #include "application_resources.hpp"
 #include "color_util.hpp"
 
+#define SDL_MAIN_USE_CALLBACKS
+#include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_gpu.h>
@@ -15,6 +18,7 @@
 // #include <SDL3/SDL_init.h>
 
 #include <cstdint>
+#include <memory>
 #include <print>
 #include <format>
 
@@ -36,32 +40,65 @@ using namespace TextLayoutEngine;
 //const auto font_line_skip = TTF_GetFontLineSkip(TTF_GetTextFont(text_engine));
 
 
+struct AppState {
 
-int main(int argc, char* argv[]) {
+    AppState(
+        std::unique_ptr<WindowGeometry> window_geometry
+    )
+        : gui_objects{std::vector<std::unique_ptr<GUIObject>>()}
+        , application_resources{std::make_unique<ApplicationResources>()}
+        , window_geometry{std::move(window_geometry)}
+        , frame_counter{std::make_unique<FrameCounter>()}
+        , performance_timer{std::make_unique<PerformanceTimer>()}
+    {
+
+    }
+
+    AppState(const AppState& other) = delete;
+    AppState(AppState&& other) = delete;
+    AppState& operator=(const AppState& other) = delete;
+    AppState& operator=(AppState&& other) = delete;
+
+    std::vector<std::unique_ptr<GUIObject>> gui_objects;
+    std::unique_ptr<ApplicationResources> application_resources;
+    std::unique_ptr<WindowGeometry> window_geometry;
+    std::unique_ptr<FrameCounter> frame_counter;
+    std::unique_ptr<PerformanceTimer> performance_timer;
+    Document document;
+};
+
+
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
+    SPDLOG_INFO("SDL_AppInit");
+
+    auto app_state = new AppState(
+        std::make_unique<WindowGeometry>()
+    );
+    *appstate = static_cast<void*>(app_state);
 
     // TODO: no longer required?
-    auto application_resources = ApplicationResources();
+    ApplicationResources& application_resources = *(app_state->application_resources);
 
     SPDLOG_INFO("Worlds Best Text Editor startup");
 
     const auto maybe_application_configuration{initialize_application_configuration()};
     if (!maybe_application_configuration) {
         SPDLOG_ERROR("failed to initialize application configuration");
-        return -1;
+        return SDL_APP_FAILURE;
     }
     const auto application_configuration{maybe_application_configuration.value()};
 
     const auto optional_font_path{application_configuration.getFontPath()};
     if (!optional_font_path) {
         SPDLOG_ERROR("failed to get font path from application configuration");
-        return -1;
+        return SDL_APP_FAILURE;
     }
     const auto font_path{optional_font_path.value()};
 
     const auto optional_font_size{application_configuration.getFontSize()};
     if (!optional_font_size) {
         SPDLOG_ERROR("failed to get font size from application configuration");
-        return -1;
+        return SDL_APP_FAILURE;
     }
     const auto font_size{optional_font_size.value()};
 
@@ -73,7 +110,7 @@ int main(int argc, char* argv[]) {
     query_sdl_performance_counter_frequency();
 
     if (!init_application_metadata()) {
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     query_video_drivers();
@@ -81,42 +118,42 @@ int main(int argc, char* argv[]) {
 
     if (!initialize_sdl(application_resources)) {
         cleanup(application_resources);
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     if (!initialize_sdl_ttf(application_resources)) {
         cleanup(application_resources);
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
-    const auto window_geometry = WindowGeometry();
+    const WindowGeometry& window_geometry = *(app_state->window_geometry);
 
     if (!initialize_window(application_resources, window_geometry)) {
         cleanup(application_resources);
-        return -1;
+        return SDL_APP_FAILURE;
     }
     const auto window = application_resources.window_list.front();
 
     if (!initialize_renderer(application_resources, window)) {
         cleanup(application_resources);
-        return -1;
+        return SDL_APP_FAILURE;
     }
     const auto renderer = application_resources.renderer_list.front();
 
     if (!query_renderer_name(renderer)) {
         cleanup(application_resources);
-        return -1;
+        return SDL_APP_FAILURE;
     }
 
     if (!initialize_text_engine(application_resources, renderer)) {
         cleanup(application_resources);
-        return -1;
+        return SDL_APP_FAILURE;
     }
     const auto text_engine = application_resources.text_engine_list.front();
 
     if (!initialize_ttf_font(application_resources, font_path.c_str(), font_size)) {
         cleanup(application_resources);
-        return -1;
+        return SDL_APP_FAILURE;
     }
     const auto ttf_font = application_resources.ttf_font_list.front();
     const auto font_line_skip{TTF_GetFontLineSkip(ttf_font)};
@@ -124,12 +161,17 @@ int main(int argc, char* argv[]) {
     // TODO: add to ApplicationResources
     // Maybe should be managed by TextArea?
     TTF_Text* ttf_text = TTF_CreateText(text_engine, ttf_font, "", 0);
+    if (!ttf_text) {
+        cleanup(application_resources);
+        return SDL_APP_FAILURE;
+    }
+    application_resources.ttf_text_list.push_back(ttf_text);
 
-    Document document;
+    Document& document{app_state->document};
     document.read_from_file("example_textfile.txt");
 
     auto text_area{
-        TextArea(
+        std::make_unique<TextArea>(
             ttf_text,
             font_line_skip,
             window_geometry.screen_width_in_pixels,
@@ -137,94 +179,174 @@ int main(int argc, char* argv[]) {
         )
     };
 
-    text_area.update_document(document, window_geometry);
+    text_area->update_document(document, window_geometry);
 
-    auto gui_objects{std::vector<GUIObject*>()};
-    gui_objects.push_back(&text_area);
+    auto &gui_objects = app_state->gui_objects;
+    gui_objects.push_back(std::move(text_area));
 
-    const auto frame_rate_latency = static_cast<Uint32>(1000.0 / 60.0);
+    //const auto thing = (dynamic_cast<TextArea*>(gui_objects.front().get()));
+    //SPDLOG_INFO("rendering result:");
+    //for (const auto& line: thing->document_layout.lines) {
+    //    SPDLOG_INFO("{}", line.text_span);
+    //}
+
     const auto performance_counter_frequency = SDL_GetPerformanceFrequency();
-    const auto performance_counter_frequency_float = static_cast<double>(performance_counter_frequency);
     auto performance_counter_last = SDL_GetPerformanceCounter();
-    uint64_t frame_count{0};
-    for (bool exit = false; exit == false; ) {
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT) {
-                SPDLOG_INFO("SDL_EVENT_QUIT");
-                exit = true;
-            }
+    app_state->frame_counter = std::move(std::make_unique<FrameCounter>());
+    app_state->performance_timer = std::move(
+        std::make_unique<PerformanceTimer>(
+            performance_counter_last,
+            performance_counter_frequency
+        )
+    );
 
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-                SPDLOG_INFO("SDL_EVENT_WINDOW_CLOSE_REQUESTED");
-                exit = true;
-            }
-        }
+    return SDL_APP_CONTINUE;
+}
 
-        if (!SetRenderDrawColor(renderer, COLOR_BLACK)) {
-            SPDLOG_ERROR("failed to set renderer drawing color");
-        }
+SDL_AppResult SDL_AppIterate(void *appstate) {
+    //SPDLOG_INFO("SDL_AppIterate");
 
-        if (!SDL_RenderClear(renderer)) {
-            const auto error = SDL_GetError();
-            SPDLOG_ERROR("render clear failed: {}", error);
-        }
+    static Uint64 last_tick = 0;
+    const Uint64 current_tick = SDL_GetTicksNS();
+    const Uint64 target_ns = 1000000000 / 60; // 60 FPS
+    if (current_tick - last_tick < target_ns) {
+        return SDL_APP_CONTINUE;
+    }
+    last_tick = current_tick;
 
-        if (!SetRenderDrawColor(renderer, COLOR_MAGENTA)) {
-            SPDLOG_ERROR("failed to set renderer drawing color");
-        }
+    const auto app_state = reinterpret_cast<AppState*>(appstate);
 
-        /*const auto ttf_font{TTF_GetTextFont(ttf_text)};
-        if (!ttf_font) {
-            const auto error = SDL_GetError();
-            SPDLOG_ERROR("failed to get font from ttf text object: {}", error);
-            return false;
-        }
+    //auto &gui_objects = app_state->gui_objects;
+    //const auto thing = (dynamic_cast<TextArea*>(gui_objects.front().get()));
+    //if (thing == nullptr) {
+    //    SPDLOG_ERROR("dynamic_cast failed");
+    //    return SDL_APP_FAILURE;
+    //}
+    //SPDLOG_INFO("rendering result:");
+    //for (const auto& line: thing->document_layout.lines) {
+    //    SPDLOG_INFO("{}", line.text_span);
+    //}
+    //return SDL_APP_SUCCESS;
 
-        const auto font_line_skip{TTF_GetFontLineSkip(ttf_font)};*/
+    ApplicationResources& application_resources = *(app_state->application_resources);
 
-        //TTF_DrawRendererText(ttf_text, 200, 200);
-        /*draw_document_layout(
-            ttf_text,
-            font_line_skip,
-            window_geometry.screen_width_in_pixels,
-            window_geometry.screen_height_in_pixels,
-            document_layout,
-            text_area.start_line
-        );*/
+    // TODO: don't like this - it is confusing since these are vectors but can only really have a single element
+    const auto renderer = application_resources.renderer_list.front();
 
-        for (auto &gui_object: gui_objects) {
-            gui_object->draw();
-        }
+    FrameCounter& frame_counter = *(app_state->frame_counter);
+    PerformanceTimer& performance_timer = *(app_state->performance_timer);
 
-        if (!SDL_RenderPresent(renderer)) {
-            const auto error = SDL_GetError();
-            SPDLOG_ERROR("render present failed: {}", error);
-        }
-
-        //SDL_Delay(frame_rate_latency);
-        SDL_WaitEventTimeout(nullptr, 16);
-
-        ++ frame_count;
-        const auto performance_counter = SDL_GetPerformanceCounter();
-        const auto time_in_seconds = static_cast<double>(performance_counter - performance_counter_last) / performance_counter_frequency_float;
-        if (time_in_seconds >= 10.0) {
-            const auto frame_rate = static_cast<double>(frame_count) / time_in_seconds;
-            SPDLOG_INFO("performance metrics: {} frames in 10 seconds, {} frames/sec", frame_count, frame_rate);
-            performance_counter_last = performance_counter;
-            frame_count = 0;
-        }
-
-        if (frame_count % 30 == 0) {
-            text_area.start_line += 1;
-        }
+    if (!SetRenderDrawColor(renderer, COLOR_BLACK)) {
+        SPDLOG_ERROR("failed to set renderer drawing color");
     }
 
-    SPDLOG_INFO("destroy text");
-    TTF_DestroyText(ttf_text);
+    if (!SDL_RenderClear(renderer)) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("render clear failed: {}", error);
+    }
+
+    if (!SetRenderDrawColor(renderer, COLOR_MAGENTA)) {
+        SPDLOG_ERROR("failed to set renderer drawing color");
+    }
+
+    /*const auto ttf_font{TTF_GetTextFont(ttf_text)};
+    if (!ttf_font) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("failed to get font from ttf text object: {}", error);
+        return false;
+    }
+
+    const auto font_line_skip{TTF_GetFontLineSkip(ttf_font)};*/
+
+    //TTF_DrawRendererText(ttf_text, 200, 200);
+    /*draw_document_layout(
+        ttf_text,
+        font_line_skip,
+        window_geometry.screen_width_in_pixels,
+        window_geometry.screen_height_in_pixels,
+        document_layout,
+        text_area.start_line
+    );*/
+
+    auto &gui_objects = app_state->gui_objects;
+    for (auto &gui_object: gui_objects) {
+        gui_object->draw();
+    }
+
+    if (!SDL_RenderPresent(renderer)) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("render present failed: {}", error);
+    }
+
+    //constexpr auto frame_rate_latency = static_cast<Uint32>(1000.0 / 60.0);
+    //SDL_Delay(frame_rate_latency);
+    //SDL_WaitEventTimeout(nullptr, frame_rate_latency);
+
+    increment_frame_counter(frame_counter);
+    const auto performance_counter = SDL_GetPerformanceCounter();
+    const auto time_in_seconds{get_time_elapsed_in_seconds(performance_timer, performance_counter)};
+    if (time_in_seconds >= 10.0) {
+        const auto frame_rate{get_frame_rate(frame_counter, performance_timer, performance_counter)};
+        const auto frame_count{frame_counter.frame_count};
+        SPDLOG_INFO("performance metrics: {} frames in 10 seconds, {} frames/sec", frame_count, frame_rate);
+        update_performance_timer(performance_timer, performance_counter);
+        reset_frame_counter(frame_counter);
+    }
+
+    for (auto &gui_object: gui_objects) {
+        gui_object->frame_update();
+    }
+
+    return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *p_event) {
+    //SPDLOG_INFO("SDL_AppEvent");
+
+    const auto app_state = reinterpret_cast<AppState*>(appstate);
+
+    ApplicationResources& application_resources = *(app_state->application_resources);
+
+    // TODO: don't like this - it is confusing since these are vectors but can only really have a single element
+    //const auto window = application_resources.window_list.front();
+
+    const SDL_Event& event{*p_event};
+
+    if (event.type == SDL_EVENT_QUIT) {
+        SPDLOG_INFO("SDL_EVENT_QUIT");
+        return SDL_APP_SUCCESS;
+    }
+
+    if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+        SPDLOG_INFO("SDL_EVENT_WINDOW_CLOSE_REQUESTED");
+        return SDL_APP_SUCCESS;
+    }
+
+    if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+        const int w{event.window.data1};
+        const int h{event.window.data2};
+        SPDLOG_INFO("SDL_EVENT_WINDOW_RESIZED: geometry {}, {}", w, h);
+    }
+
+    if (event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+        const int w{event.window.data1};
+        const int h{event.window.data2};
+        SPDLOG_INFO("SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: geometry {}, {}", w, h);
+    }
+
+    return SDL_APP_CONTINUE;
+}
+
+
+void SDL_AppQuit(void *appstate, SDL_AppResult result) {
+    SPDLOG_INFO("SDL_AppQuit");
+
+    const auto app_state = reinterpret_cast<AppState*>(appstate);
+
+    ApplicationResources& application_resources = *(app_state->application_resources);
 
     cleanup(application_resources);
 
-    return 0;
+    delete app_state;
 }

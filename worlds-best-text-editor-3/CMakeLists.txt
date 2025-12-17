@@ -9,6 +9,7 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(jsoncpp CONFIG REQUIRED)
 
 add_subdirectory(spdlog_util)
+add_subdirectory(performance_util)
 add_subdirectory(window_geometry)
 add_subdirectory(application_configuration)
 add_subdirectory(application_resources)
@@ -28,6 +29,7 @@ target_link_libraries(
     PRIVATE
     #fmt::fmt
     spdlog_util
+    performance_util
     application_configuration
     application_resources
     color_util

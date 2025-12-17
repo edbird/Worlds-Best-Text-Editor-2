@@ -123,12 +123,21 @@ bool init_application_metadata() {
 
 void cleanup(ApplicationResources& application_resources) {
 
+    while (application_resources.ttf_text_list.size() > 0) {
+        const auto ttf_text = application_resources.ttf_text_list.back();
+        application_resources.ttf_text_list.pop_back();
+        const auto index = application_resources.ttf_text_list.size(); // note: index correct, not -1 required
+
+        SPDLOG_INFO("destroy text {}", index);
+        TTF_DestroyText(ttf_text);
+    }
+
     while (application_resources.ttf_font_list.size() > 0) {
         const auto ttf_font = application_resources.ttf_font_list.back();
         application_resources.ttf_font_list.pop_back();
         const auto index = application_resources.ttf_font_list.size(); // note: index correct, not -1 required
 
-        SPDLOG_INFO("destroy fonts");
+        SPDLOG_INFO("destroy font {}", index);
         TTF_CloseFont(ttf_font);
     }
 

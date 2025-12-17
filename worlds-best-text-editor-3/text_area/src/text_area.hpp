@@ -2,7 +2,6 @@
 #define TEXT_AREA_HPP
 
 #include "text_layout_engine_measure_string.hpp"
-
 #include "window_geometry.hpp"
 #include "document.hpp"
 
@@ -13,6 +12,8 @@ struct GUIObject {
     virtual ~GUIObject() {}
 
     virtual void draw() const = 0;
+
+    virtual void frame_update() = 0;
 };
 
 struct TextArea : public GUIObject {
@@ -28,12 +29,15 @@ struct TextArea : public GUIObject {
         , font_line_skip{font_line_skip}
         , screen_width_in_pixels{screen_width_in_pixels}
         , screen_height_in_pixels{screen_height_in_pixels}
+        , frame_count{0}
     {
     }
 
     virtual ~TextArea();
 
     virtual void draw() const;
+
+    virtual void frame_update();
 
     void update_document(
         const Document& document,
@@ -46,6 +50,9 @@ struct TextArea : public GUIObject {
     int font_line_skip;
     int screen_width_in_pixels;
     int screen_height_in_pixels;
+
+    // TODO: remove
+    int64_t frame_count;
 };
 
 #endif

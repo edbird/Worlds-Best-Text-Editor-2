@@ -2,6 +2,7 @@
 
 #include "text_area.hpp"
 
+#include "text_layout_engine_measure_string.hpp"
 #include "window_geometry.hpp"
 #include "document.hpp"
 
@@ -23,6 +24,15 @@ void TextArea::draw() const {
     );
 }
 
+
+void TextArea::frame_update() {
+    ++ frame_count;
+
+    if (frame_count % 30 == 0) {
+        start_line += 1;
+    }
+}
+
 void TextArea::update_document(
     const Document& document,
     const WindowGeometry& window_geometry
@@ -30,7 +40,7 @@ void TextArea::update_document(
 
     const auto ttf_font{TTF_GetTextFont(ttf_text)};
 
-    const auto document_layout = create_document_layout(
+    document_layout = create_document_layout(
         ttf_font,
         document,
         window_geometry.screen_width_in_pixels
@@ -40,6 +50,4 @@ void TextArea::update_document(
     for (const auto& line: document_layout.lines) {
         SPDLOG_INFO("{}", line.text_span);
     }
-
-    this->document_layout = std::move(document_layout);
 }
