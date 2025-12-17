@@ -32,6 +32,49 @@ using namespace TextLayoutEngine;
 // TODO: move this, possibly simpler way to get the value
 //const auto font_line_skip = TTF_GetFontLineSkip(TTF_GetTextFont(text_engine));
 
+bool draw_document_layout(const DocumentLayout& document_layout) {
+    const int start_line{10};
+    const int dy = TTF_GetFontLineSkip(ttf_font);
+    int y = 0;
+    for (const auto& [line_index, line]: std::ranges::enumerate_view(document_layout.lines)) {
+
+        if (line_index < start_line) {
+            continue;
+        }
+
+        const auto width_pixels = line.width_pixels;
+        const auto height_pixels = line.height_pixels;
+
+        if (0 + width_pixels < screen_width_in_pixels) {
+
+        }
+        else {
+            continue;
+        }
+        if (y + height_pixels < screen_height_in_pixels) {
+
+        }
+        else {
+            break;
+        }
+
+        const auto line_text = line.text_span;
+        if (!TTF_SetTextString(ttf_text, line_text.data(), line_text.size())) {
+            const auto error = SDL_GetError();
+            SPDLOG_ERROR("failed to set text string: {}", error);
+            return false;
+        }
+        if (!TTF_DrawRendererText(ttf_text, 0.0f, static_cast<float>(y))) {
+            const auto error = SDL_GetError();
+            SPDLOG_ERROR("failed to draw text: {}", error);
+            return false;
+        }
+        y += dy;
+    }
+
+    return true;
+}
+
 int main(int argc, char* argv[]) {
 
     // TODO: no longer required?
@@ -221,36 +264,7 @@ int main(int argc, char* argv[]) {
         }
 
         //TTF_DrawRendererText(ttf_text, 200, 200);
-        const int start_line{10};
-        const int dy = TTF_GetFontLineSkip(ttf_font);
-        int y = 0;
-        for (const auto& [line_index, line]: std::ranges::enumerate_view(document_layout.lines)) {
-
-            if (line_index < start_line) {
-                continue;
-            }
-
-            const auto width_pixels = line.width_pixels;
-            const auto height_pixels = line.height_pixels;
-
-            if (0 + width_pixels < screen_width_in_pixels) {
-
-            }
-            else {
-                continue;
-            }
-            if (y + height_pixels < screen_height_in_pixels) {
-
-            }
-            else {
-                break;
-            }
-
-            const auto line_text = line.text_span;
-            TTF_SetTextString(ttf_text, line_text.data(), line_text.size()); // TODO: error handling
-            TTF_DrawRendererText(ttf_text, 0.0f, static_cast<float>(y));
-            y += dy;
-        }
+        draw_document_layout(document_layout);
 
         #if 0
         int w = 0;
