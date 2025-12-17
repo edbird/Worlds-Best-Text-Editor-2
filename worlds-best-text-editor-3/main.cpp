@@ -162,11 +162,12 @@ int main(int argc, char* argv[]) {
     Document document;
     document.read_from_file("example_textfile.txt");
 
-    const int width_in_pixels = 800;
+    const int screen_width_in_pixels = 800;
+    const int screen_height_in_pixels = 600;
     const auto document_layout = create_document_layout(
         ttf_text,
         document,
-        width_in_pixels
+        screen_width_in_pixels
     );
 
     SPDLOG_INFO("rendering result:");
@@ -220,9 +221,31 @@ int main(int argc, char* argv[]) {
         }
 
         //TTF_DrawRendererText(ttf_text, 200, 200);
+        const int start_line{10};
         const int dy = TTF_GetFontLineSkip(ttf_font);
         int y = 0;
-        for (const auto& line: document_layout.lines) {
+        for (const auto& [line_index, line]: std::ranges::enumerate_view(document_layout.lines)) {
+
+            if (line_index < start_line) {
+                continue;
+            }
+
+            const auto width_pixels = line.width_pixels;
+            const auto height_pixels = line.height_pixels;
+
+            if (0 + width_pixels < screen_width_in_pixels) {
+
+            }
+            else {
+                continue;
+            }
+            if (y + height_pixels < screen_height_in_pixels) {
+
+            }
+            else {
+                break;
+            }
+
             const auto line_text = line.text_span;
             TTF_SetTextString(ttf_text, line_text.data(), line_text.size()); // TODO: error handling
             TTF_DrawRendererText(ttf_text, 0.0f, static_cast<float>(y));
