@@ -32,10 +32,16 @@ using namespace TextLayoutEngine;
 // TODO: move this, possibly simpler way to get the value
 //const auto font_line_skip = TTF_GetFontLineSkip(TTF_GetTextFont(text_engine));
 
-bool draw_document_layout(const DocumentLayout& document_layout) {
+bool draw_document_layout(
+    TTF_Text* ttf_text,
+    const int font_line_skip,
+    const int screen_width_in_pixels,
+    const int screen_height_in_pixels,
+    const DocumentLayout& document_layout
+) {
     const int start_line{10};
-    const int dy = TTF_GetFontLineSkip(ttf_font);
     int y = 0;
+    const auto dy{font_line_skip};
     for (const auto& [line_index, line]: std::ranges::enumerate_view(document_layout.lines)) {
 
         if (line_index < start_line) {
@@ -263,8 +269,19 @@ int main(int argc, char* argv[]) {
             SPDLOG_ERROR("failed to set renderer drawing color");
         }
 
+        /*const auto ttf_font{TTF_GetTextFont(ttf_text)};
+        if (!ttf_font) {
+            const auto error = SDL_GetError();
+            SPDLOG_ERROR("failed to get font from ttf text object: {}", error);
+            return false;
+        }
+
+        const auto font_line_skip{TTF_GetFontLineSkip(ttf_font)};*/
+
+        const auto font_line_skip{TTF_GetFontLineSkip(ttf_font)};
+
         //TTF_DrawRendererText(ttf_text, 200, 200);
-        draw_document_layout(document_layout);
+        draw_document_layout(ttf_text, font_line_skip, screen_width_in_pixels, screen_height_in_pixels, document_layout);
 
         #if 0
         int w = 0;

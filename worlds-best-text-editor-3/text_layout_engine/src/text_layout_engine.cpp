@@ -25,6 +25,8 @@ std::tuple<int, int> calculate_text_width_and_height_in_pixels(
     return std::make_tuple(w, h);
 }
 
+// TODO: this may error if a very, very long line is passed!
+// Need to limit line size to max 10 * 4096 characters or something
 std::tuple<std::size_t, int, int> calculate_number_of_characters_that_fit_on_line(
     TTF_Text* ttf_text,
     const std::string& line,
@@ -49,9 +51,10 @@ std::tuple<std::size_t, int, int> calculate_number_of_characters_that_fit_on_lin
     const auto lambda = [
         ttf_text,
         line_view,
+        width_in_pixels,
         &prefix_width_in_pixels,
         &prefix_height_in_pixels
-    ](const auto end_index, const auto& width_in_pixels) -> bool {
+    ](const auto end_index) -> bool {
         SPDLOG_DEBUG("lambda: end_index={}, ", end_index);
 
         // Convert end index to substring (prefix) view
@@ -68,13 +71,12 @@ std::tuple<std::size_t, int, int> calculate_number_of_characters_that_fit_on_lin
         prefix_height_in_pixels = _prefix_height_in_pixels;
 
         // TODO: check <= here or < ???
-        return _prefix_width_in_pixels < static_cast<int64_t>(width_in_pixels);
+        return static_cast<int64_t>(_prefix_width_in_pixels) < static_cast<int64_t>(width_in_pixels);
     };
 
-    const auto end_it = std::lower_bound(
+    const auto end_it = std::partition_point(
         index_it.begin(),
         index_it.end(),
-        width_in_pixels,
         lambda
     );
     const auto end_index{*end_it};
