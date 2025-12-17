@@ -157,9 +157,6 @@ int main(int argc, char* argv[]) {
     SDL_DestroySurface(text_surface);
     #endif
 
-    //const auto text1_string = "Hello world";
-    //const auto text1_length = strlen(text1_string);
-    //TTF_Text* ttf_text = TTF_CreateText(text_engine, ttf_font, text1_string, text1_length);
     TTF_Text* ttf_text = TTF_CreateText(text_engine, ttf_font, "", 0);
 
     Document document;

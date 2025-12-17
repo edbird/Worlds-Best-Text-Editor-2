@@ -28,20 +28,6 @@ namespace TextLayoutEngine {
         std::vector<DocumentLayoutLine> lines;
     };
 
-    std::size_t calculate_wrap_length(
-        TTF_Text* ttf_text,
-        const int width_in_pixels,
-        const std::string& line,
-        const std::size_t start
-    );
-
-    std::vector<DocumentLayoutLine> wrap_line(
-        TTF_Text* ttf_text,
-        const std::string& line,
-        const std::size_t line_index,
-        std::size_t width_in_pixels
-    );
-
     DocumentLayout create_document_layout(
         TTF_Text* ttf_text,
         const Document& document,
