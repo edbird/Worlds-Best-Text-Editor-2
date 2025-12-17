@@ -206,3 +206,55 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
 
     return document_layout;
 }
+
+bool TextLayoutEngine::draw_document_layout(
+    TTF_Text* ttf_text,
+    const int font_line_skip,
+    const int screen_width_in_pixels,
+    const int screen_height_in_pixels,
+    const DocumentLayout& document_layout,
+    const int start_line
+) {
+    int y = 0;
+    const auto dy{font_line_skip};
+    for (const auto& [line_index, line]: std::ranges::enumerate_view(document_layout.lines)) {
+
+        if (line_index < start_line) {
+            continue;
+        }
+
+        const auto width_pixels = line.width_pixels;
+        //const auto height_pixels = line.height_pixels;
+        const auto height_pixels = font_line_skip;
+
+        if (0 + width_pixels <= screen_width_in_pixels) {
+
+        }
+        else {
+            SPDLOG_WARN("skipping rendering of line {}, width is {} which exceeds maximum width of {}", line_index, 0 + width_pixels, screen_width_in_pixels);
+            continue;
+        }
+        if (y + height_pixels <= screen_height_in_pixels) {
+
+        }
+        else {
+            break;
+        }
+
+        const auto line_text = line.text_span;
+        //SPDLOG_INFO("line_text={}", line_text);
+        if (!TTF_SetTextString(ttf_text, line_text.data(), line_text.size())) {
+            const auto error = SDL_GetError();
+            SPDLOG_ERROR("failed to set text string: {}", error);
+            return false;
+        }
+        if (!TTF_DrawRendererText(ttf_text, 0.0f, static_cast<float>(y))) {
+            const auto error = SDL_GetError();
+            SPDLOG_ERROR("failed to draw text: {}", error);
+            return false;
+        }
+        y += dy;
+    }
+
+    return true;
+}

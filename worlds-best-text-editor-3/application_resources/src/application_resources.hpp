@@ -3,6 +3,8 @@
 
 #include "spdlog_util.hpp"
 
+#include "window_geometry.hpp"
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_version.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -53,7 +55,7 @@ bool initialize_sdl(ApplicationResources &application_resources);
 
 bool initialize_sdl_ttf(ApplicationResources &application_resources);
 
-bool initialize_window(ApplicationResources &application_resources);
+bool initialize_window(ApplicationResources &application_resources, const WindowGeometry& window_geometry);
 
 bool initialize_renderer(ApplicationResources &application_resources, SDL_Window* const window);
 

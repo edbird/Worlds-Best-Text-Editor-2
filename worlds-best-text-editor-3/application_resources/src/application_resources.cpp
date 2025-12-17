@@ -2,6 +2,8 @@
 
 #include "application_resources.hpp"
 
+#include "window_geometry.hpp"
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_version.h>
 #include <SDL3_ttf/SDL_ttf.h>
@@ -186,11 +188,13 @@ bool initialize_sdl_ttf(ApplicationResources &application_resources) {
     return true;
 }
 
-bool initialize_window(ApplicationResources &application_resources) {
+bool initialize_window(ApplicationResources &application_resources, const WindowGeometry& window_geometry) {
 
     SPDLOG_INFO("SDL create window");
+    const auto width{window_geometry.screen_width_in_pixels};
+    const auto height{window_geometry.screen_height_in_pixels};
     const auto window_flags = SDL_WINDOW_RESIZABLE;
-    const auto window = SDL_CreateWindow("Worlds Best Text Editor", 800, 600, window_flags);
+    const auto window = SDL_CreateWindow("Worlds Best Text Editor", width, height, window_flags);
     if (!window) {
         const auto error = SDL_GetError();
         SPDLOG_ERROR("failed to create window: {}", error);

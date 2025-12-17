@@ -1,20 +1,19 @@
 add_library(
-    application_resources
+    text_area
     STATIC
-    application_resources.cpp
+    text_area.cpp
 )
 
 target_include_directories(
-    application_resources
+    text_area
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(
-    application_resources
+    text_area
     PUBLIC
     spdlog_util
+    text_layout_engine_measure_string
     window_geometry
-    SDL3::SDL3
-    SDL3_ttf::SDL3_ttf
 )
