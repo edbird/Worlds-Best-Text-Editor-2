@@ -114,7 +114,10 @@ std::size_t calculate_number_of_characters_that_fit_on_line(
     SPDLOG_INFO("line_view={}", line_view);
 
     // Create iterator over range of index values of `line_view`
-    const auto index_it = std::views::iota(0ull, line_view.size());
+    const auto index_it = std::views::iota(
+        static_cast<decltype(line_view.size())>(0),
+        line_view.size()
+    );
 
     const auto lambda = [ttf_text, line_view](const auto end_index, const auto& width_in_pixels) -> bool {
         SPDLOG_INFO("lambda: end_index={}, ", end_index);
@@ -223,6 +226,8 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> TextLayoutEngine::wrap_line(
         SPDLOG_INFO("pos advanced to end_pos = {}", end_pos);
         //char_index = pos;
     }
+
+    return document_layout_lines;
 }
 
 TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
