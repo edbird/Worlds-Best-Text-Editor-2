@@ -139,6 +139,9 @@ int main(int argc, char* argv[]) {
 
     text_area.update_document(document, window_geometry);
 
+    auto gui_objects{std::vector<GUIObject*>()};
+    gui_objects.push_back(&text_area);
+
     const auto frame_rate_latency = static_cast<Uint32>(1000.0 / 60.0);
     const auto performance_counter_frequency = SDL_GetPerformanceFrequency();
     const auto performance_counter_frequency_float = static_cast<double>(performance_counter_frequency);
@@ -190,7 +193,10 @@ int main(int argc, char* argv[]) {
             document_layout,
             text_area.start_line
         );*/
-        text_area.draw();
+
+        for (auto &gui_object: gui_objects) {
+            gui_object->draw();
+        }
 
         if (!SDL_RenderPresent(renderer)) {
             const auto error = SDL_GetError();

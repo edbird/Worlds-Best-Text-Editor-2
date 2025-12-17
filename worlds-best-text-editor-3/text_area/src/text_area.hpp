@@ -8,7 +8,14 @@
 
 using namespace TextLayoutEngine;
 
-struct TextArea {
+struct GUIObject {
+
+    virtual ~GUIObject() {}
+
+    virtual void draw() const = 0;
+};
+
+struct TextArea : public GUIObject {
 
     TextArea(
         TTF_Text* ttf_text,
