@@ -16,4 +16,7 @@ target_link_libraries(
     spdlog_util
     text_layout_engine_measure_string
     window_geometry
+
+    # note: only really needs command
+    event_system
 )

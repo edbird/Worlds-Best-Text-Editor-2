@@ -9,6 +9,8 @@
 
 #include <string>
 #include <string_view>
+#include <functional>
+#include <optional>
 
 namespace TextLayoutEngine {
 
@@ -27,7 +29,7 @@ namespace TextLayoutEngine {
 
     DocumentLayout create_document_layout(
         TTF_Font* ttf_font,
-        const Document& document,
+        const std::optional<std::reference_wrapper<Document>> optional_document,
         const int text_area_width_in_pixels
     );
 

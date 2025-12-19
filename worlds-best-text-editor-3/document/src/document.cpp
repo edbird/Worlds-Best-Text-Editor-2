@@ -41,3 +41,14 @@ void Document::read_from_file(const char* filename) {
 
     SPDLOG_INFO("text data read from file {}", filename);
 }
+
+void Document::insert_char(const std::string& utf8_character) {
+    SPDLOG_INFO("insert_char: {}", utf8_character);
+    if (lines.size() < 1) {
+        SPDLOG_INFO("document contains 0 lines, do nothing");
+        return ;
+    }
+
+    auto &first_line{lines[0]};
+    first_line.insert(0, utf8_character);
+}

@@ -77,6 +77,9 @@ struct EventSystem {
             const auto command = create_insert_char_command(std::move(utf8_character));
             return command;
         }
+        else if (event.type == SDL_EVENT_MOUSE_MOTION) {
+            // ignored to prevent repeat output of logging message below
+        }
         else {
             SPDLOG_INFO("unhandled event type in EventSystem::handle_event");
         }

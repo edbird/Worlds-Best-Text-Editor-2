@@ -9,6 +9,8 @@
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <functional>
+#include <optional>
 
 bool calculate_text_width_in_pixels_and_length(
     TTF_Font* ttf_font,
@@ -187,22 +189,25 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
 
 TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
     TTF_Font* ttf_font,
-    const Document& document,
+    const std::optional<std::reference_wrapper<Document>> optional_document,
     const int text_area_width_in_pixels
 ) {
     DocumentLayout document_layout;
 
-    int counter = 0;
+    if (optional_document.has_value()) {
+        auto &document{optional_document.value().get()};
 
-    std::size_t line_index = 0;
-    for (const auto& line: document.lines) {
-        SPDLOG_DEBUG("line_index={}", line_index);
+        std::size_t line_index = 0;
+        for (const auto& line: document.lines) {
+            SPDLOG_DEBUG("line_index={}", line_index);
 
-        std::vector<DocumentLayoutLine> wrapped_lines = wrap_line(ttf_font, line, line_index, text_area_width_in_pixels);
-        document_layout.lines.append_range(std::move(wrapped_lines));
+            std::vector<DocumentLayoutLine> wrapped_lines = wrap_line(ttf_font, line, line_index, text_area_width_in_pixels);
+            document_layout.lines.append_range(std::move(wrapped_lines));
 
-        ++ line_index;
+            ++ line_index;
+        }
     }
+
 
     return document_layout;
 }

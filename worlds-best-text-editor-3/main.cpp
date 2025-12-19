@@ -179,11 +179,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
             ttf_text,
             font_line_skip,
             window_geometry.screen_width_in_pixels,
-            window_geometry.screen_height_in_pixels
+            window_geometry.screen_height_in_pixels,
+            std::ref(app_state->document)
         )
     };
 
-    text_area->update_document(document, window_geometry);
+    text_area->update_document_layout();
 
     auto &gui_objects = app_state->gui_objects;
     gui_objects.push_back(std::move(text_area));
@@ -198,6 +199,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
             performance_counter_frequency
         )
     );
+
+    SDL_StartTextInput(window);
 
     return SDL_APP_CONTINUE;
 }
@@ -277,28 +280,39 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *p_event) {
     const SDL_Event& event{*p_event};
 
     const auto &event_system{app_state->event_system};
-    const auto command{event_system.handle_event(event)};
+    const auto optional_command{event_system.handle_event(event)};
 
-    if (command.has_value()) {
+    if (optional_command.has_value()) {
         // do what (?)
+
+        auto command{optional_command.value()};
+
+        if (command.command_type == CommandType::QUIT) {
+            return SDL_APP_SUCCESS;
+        }
+
+        auto &gui_objects = app_state->gui_objects;
+        for (auto &gui_object: gui_objects) {
+            gui_object->handle_command(command);
+        }
     }
     else {
         // do nothing (?)
     }
 
     // TODO: the items below should be passed to event_system.handle_event
-
+    // TODO: move into event_system
     if (event.type == SDL_EVENT_QUIT) {
         SPDLOG_INFO("SDL_EVENT_QUIT");
         return SDL_APP_SUCCESS;
     }
 
-    if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+    else if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
         SPDLOG_INFO("SDL_EVENT_WINDOW_CLOSE_REQUESTED");
         return SDL_APP_SUCCESS;
     }
 
-    if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+    else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
         const int w{event.window.data1};
         const int h{event.window.data2};
         SPDLOG_INFO("SDL_EVENT_WINDOW_RESIZED: geometry {}, {}", w, h);
@@ -314,11 +328,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *p_event) {
         }
         else {
             Document& document{app_state->document};
-            text_area->update_document(document, *window_geometry);
+            text_area->update_geometry(w, h);
+            text_area->update_document_layout();
         }
     }
 
-    if (event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+    else if (event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         const int w{event.window.data1};
         const int h{event.window.data2};
         SPDLOG_INFO("SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: geometry {}, {}", w, h);

@@ -5,6 +5,7 @@
 #include "text_layout_engine_measure_string.hpp"
 #include "window_geometry.hpp"
 #include "document.hpp"
+#include "command.hpp"
 
 TextArea::~TextArea() {
 
@@ -24,24 +25,34 @@ void TextArea::draw() const {
     );
 }
 
+void TextArea::handle_command(Command& command) {
+    SPDLOG_INFO("handle_command: {}, {}", std::format("{}", command.command_type), command.utf8_character);
+
+    if (command.command_type == CommandType::INSERT_CHAR) {
+        if (optional_document.has_value()) {
+            auto document{optional_document.value()};
+
+            document.get().insert_char(command.utf8_character);
+        }
+
+        update_document_layout();
+    }
+    else {
+        // TextArea does not handle this command
+    }
+}
 
 void TextArea::frame_update() {
     ++ frame_count;
 }
 
-void TextArea::update_document(
-    const Document& document,
-    const WindowGeometry& window_geometry
-) {
-
-    width_in_pixels = window_geometry.screen_width_in_pixels;
-    height_in_pixels = window_geometry.screen_height_in_pixels;
+void TextArea::update_document_layout() {
 
     const auto ttf_font{TTF_GetTextFont(ttf_text)};
 
     document_layout = create_document_layout(
         ttf_font,
-        document,
+        optional_document,
         width_in_pixels
     );
 
