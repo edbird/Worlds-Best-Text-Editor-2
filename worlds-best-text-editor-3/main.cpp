@@ -5,6 +5,7 @@
 #include "window_geometry.hpp"
 #include "application_resources.hpp"
 #include "color_util.hpp"
+#include "event_system.hpp"
 
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
@@ -50,8 +51,10 @@ struct AppState {
         , window_geometry{std::move(window_geometry)}
         , frame_counter{std::make_unique<FrameCounter>()}
         , performance_timer{std::make_unique<PerformanceTimer>()}
+        , keybinding_configuration{KeybindingConfiguration()}
+        , event_system{EventSystem(keybinding_configuration)}
     {
-
+        keybinding_configuration.load_default();
     }
 
     AppState(const AppState& other) = delete;
@@ -59,11 +62,14 @@ struct AppState {
     AppState& operator=(const AppState& other) = delete;
     AppState& operator=(AppState&& other) = delete;
 
+    // TODO: which of these should/should not use std::unique_ptr?
     std::vector<std::unique_ptr<GUIObject>> gui_objects;
     std::unique_ptr<ApplicationResources> application_resources;
     std::unique_ptr<WindowGeometry> window_geometry;
     std::unique_ptr<FrameCounter> frame_counter;
     std::unique_ptr<PerformanceTimer> performance_timer;
+    KeybindingConfiguration keybinding_configuration;
+    EventSystem event_system;
     Document document;
 };
 
@@ -269,6 +275,18 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *p_event) {
     //const auto window = application_resources.window_list.front();
 
     const SDL_Event& event{*p_event};
+
+    const auto &event_system{app_state->event_system};
+    const auto command{event_system.handle_event(event)};
+
+    if (command.has_value()) {
+        // do what (?)
+    }
+    else {
+        // do nothing (?)
+    }
+
+    // TODO: the items below should be passed to event_system.handle_event
 
     if (event.type == SDL_EVENT_QUIT) {
         SPDLOG_INFO("SDL_EVENT_QUIT");

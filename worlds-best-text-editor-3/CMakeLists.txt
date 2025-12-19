@@ -18,6 +18,7 @@ add_subdirectory(document)
 add_subdirectory(text_layout_engine)
 add_subdirectory(text_layout_engine_measure_string)
 add_subdirectory(text_area)
+add_subdirectory(event_system)
 
 add_executable(
     worlds-best-text-editor-3
@@ -35,6 +36,7 @@ target_link_libraries(
     color_util
     text_layout_engine_measure_string
     text_area
+    event_system
     SDL3::SDL3
     SDL3_ttf::SDL3_ttf
     JsonCpp::JsonCpp
