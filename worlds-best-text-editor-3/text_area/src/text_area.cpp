@@ -27,10 +27,6 @@ void TextArea::draw() const {
 
 void TextArea::frame_update() {
     ++ frame_count;
-
-    if (frame_count % 30 == 0) {
-        start_line += 1;
-    }
 }
 
 void TextArea::update_document(

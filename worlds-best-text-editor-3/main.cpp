@@ -252,7 +252,7 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
     }
 
     for (auto &gui_object: gui_objects) {
-        //gui_object->frame_update();
+        gui_object->frame_update();
     }
 
     return SDL_APP_CONTINUE;
@@ -286,9 +286,10 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *p_event) {
         SPDLOG_INFO("SDL_EVENT_WINDOW_RESIZED: geometry {}, {}", w, h);
 
         auto &window_geometry{app_state->window_geometry};
-        window_geometry->screen_width_in_pixels = w;
-        window_geometry->screen_height_in_pixels = h;
+        window_geometry->update_geometry(w, h);
 
+        // TODO: need some kind of hierachical container system to place the text area inside
+        // some other gui object, which contains also things like status bar etc
         TextArea* const text_area = dynamic_cast<TextArea*>(app_state->gui_objects.front().get());
         if (!text_area) {
             SPDLOG_ERROR("dynamic cast failed");
