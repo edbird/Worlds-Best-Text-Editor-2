@@ -25,6 +25,7 @@ struct GUIObject {
 struct TextArea : public GUIObject {
 
     TextArea(
+        SDL_Renderer* renderer,
         TTF_Text* ttf_text,
         const int font_line_skip,
         const int width_in_pixels,
@@ -32,6 +33,7 @@ struct TextArea : public GUIObject {
         const std::optional<std::reference_wrapper<Document>> optional_document
     )
         : start_line{0}
+        , renderer{renderer}
         , ttf_text{ttf_text}
         , font_line_skip{font_line_skip}
         , width_in_pixels{width_in_pixels}
@@ -60,6 +62,7 @@ struct TextArea : public GUIObject {
 
     DocumentLayout document_layout;
     std::size_t start_line;
+    SDL_Renderer* renderer;
     TTF_Text* ttf_text;
     int font_line_skip;
     int width_in_pixels;

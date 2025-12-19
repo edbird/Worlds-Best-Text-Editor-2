@@ -5,6 +5,8 @@
 
 #include <format>
 
+#pragma push_macro("DELETE")
+#undef DELETE
 enum class CommandType {
     QUIT,
     CLOSE_WINDOW,
@@ -14,6 +16,7 @@ enum class CommandType {
     DOWN,
     LEFT,
     RIGHT,
+    DELETE,
     INSERT_CHAR
 };
 
@@ -42,11 +45,15 @@ constexpr std::string_view to_string(const CommandType command_type) noexcept {
     else if (command_type == CommandType::RIGHT) {
         return "RIGHT";
     }
+    else if (command_type == CommandType::DELETE) {
+        return "DELETE";
+    }
     else if (command_type == CommandType::INSERT_CHAR) {
         return "INSERT_CHAR";
     }
     return "(COMMAND_TYPE)";
 }
+#pragma pop_macro("DELETE")
 
 template<>
 struct std::formatter<CommandType> : std::formatter<std::string_view> {

@@ -11,6 +11,7 @@
 #include <optional>
 #include <unordered_map>
 
+//#undef DELETE
 
 struct KeyChord {
 
@@ -42,7 +43,9 @@ struct KeybindingConfiguration {
     std::unordered_map<KeyChord, Command> keybinding_configuration;
 
     void bind(const KeyChord& keychord, Command command) {
-        if (!keybinding_configuration.contains(keychord)) {
+        SPDLOG_INFO("bind");
+
+        if (keybinding_configuration.contains(keychord)) {
             SPDLOG_WARN("keybinding configuration already contains an entry for this keychord, ignoring");
             return ;
         }
@@ -50,20 +53,26 @@ struct KeybindingConfiguration {
     }
 
     void unbind(const KeyChord& keychord) {
+        SPDLOG_INFO("unbind");
+
         keybinding_configuration.erase(keychord);
     }
 
     // TODO: load this from JSON file
     void load_default() {
+        SPDLOG_INFO("load default keybindings");
         bind(KeyChord(SDLK_Q, SDL_KMOD_CTRL), Command(CommandType::QUIT));
         bind(KeyChord(SDLK_S, SDL_KMOD_CTRL), Command(CommandType::SAVE_DOCUMENT));
         bind(KeyChord(SDLK_UP, SDL_KMOD_NONE), Command(CommandType::UP));
         bind(KeyChord(SDLK_DOWN, SDL_KMOD_NONE), Command(CommandType::DOWN));
         bind(KeyChord(SDLK_LEFT, SDL_KMOD_NONE), Command(CommandType::LEFT));
         bind(KeyChord(SDLK_RIGHT, SDL_KMOD_NONE), Command(CommandType::RIGHT));
+        bind(KeyChord(SDLK_DELETE, SDL_KMOD_NONE), Command(CommandType::DELETE));
     }
 
     std::optional<Command> find(const KeyChord& keychord) const {
+        SPDLOG_INFO("find keychord with key code {} and key mod {}", keychord.keycode, keychord.keymod);
+
         const auto it{keybinding_configuration.find(keychord)};
         if (it == keybinding_configuration.cend()) {
             return std::nullopt;

@@ -5,8 +5,10 @@
 
 struct Document {
 
-    Document() {
-
+    Document()
+        : lines{std::vector<std::string>()}
+        , cursor{std::make_pair(0ul, 0ul)}
+    {
     }
 
     ~Document() {
@@ -24,7 +26,15 @@ struct Document {
 
     void insert_char(const std::string& utf8_character);
 
+    void delete_();
+
+    void cursor_up();
+    void cursor_down();
+    void cursor_left();
+    void cursor_right();
+
     std::vector<std::string> lines;
+    std::tuple<std::size_t, std::size_t> cursor;
 };
 
 #endif

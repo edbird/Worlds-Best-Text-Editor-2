@@ -176,6 +176,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 
     auto text_area{
         std::make_unique<TextArea>(
+            renderer,
             ttf_text,
             font_line_skip,
             window_geometry.screen_width_in_pixels,

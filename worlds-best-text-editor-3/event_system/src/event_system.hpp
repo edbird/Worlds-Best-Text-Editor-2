@@ -27,6 +27,7 @@ struct EventSystem {
 
             const auto keychord{KeyChord(keycode, keymod)};
             const auto command{keybinding_configuration.find(keychord)};
+
             return command;
             /*if (command.has_value()) {
                 return command

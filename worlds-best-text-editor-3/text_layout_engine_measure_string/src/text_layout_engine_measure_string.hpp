@@ -25,6 +25,7 @@ namespace TextLayoutEngine {
     struct DocumentLayout {
 
         std::vector<DocumentLayoutLine> lines;
+        std::tuple<std::size_t, std::size_t> cursor;
     };
 
     DocumentLayout create_document_layout(
@@ -34,6 +35,7 @@ namespace TextLayoutEngine {
     );
 
     bool draw_document_layout(
+        SDL_Renderer* renderer,
         TTF_Text* ttf_text,
         const int font_line_skip,
         const int text_area_width_in_pixels,
