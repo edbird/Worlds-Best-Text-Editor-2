@@ -21,14 +21,14 @@ struct TextArea : public GUIObject {
     TextArea(
         TTF_Text* ttf_text,
         const int font_line_skip,
-        const int screen_width_in_pixels,
-        const int screen_height_in_pixels
+        const int width_in_pixels,
+        const int height_in_pixels
     )
         : start_line{0}
         , ttf_text{ttf_text}
         , font_line_skip{font_line_skip}
-        , screen_width_in_pixels{screen_width_in_pixels}
-        , screen_height_in_pixels{screen_height_in_pixels}
+        , width_in_pixels{width_in_pixels}
+        , height_in_pixels{height_in_pixels}
         , frame_count{0}
     {
     }
@@ -50,8 +50,8 @@ struct TextArea : public GUIObject {
     std::size_t start_line;
     TTF_Text* ttf_text;
     int font_line_skip;
-    int screen_width_in_pixels;
-    int screen_height_in_pixels;
+    int width_in_pixels;
+    int height_in_pixels;
 
     // TODO: remove
     int64_t frame_count;

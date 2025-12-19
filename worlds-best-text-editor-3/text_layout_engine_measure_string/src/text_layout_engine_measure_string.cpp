@@ -51,7 +51,7 @@ bool calculate_number_of_characters_that_fit_on_line(
     TTF_Font* ttf_font,
     const std::string& line,
     const std::size_t pos,
-    const std::size_t width_in_pixels,
+    const int text_area_width_in_pixels,
     int *const prefix_width_in_pixels,
     std::size_t *const prefix_length
 ) {
@@ -72,7 +72,7 @@ bool calculate_number_of_characters_that_fit_on_line(
         ttf_font,
         text,
         text_length,
-        width_in_pixels,
+        text_area_width_in_pixels,
         prefix_width_in_pixels,
         prefix_length
     )) {
@@ -97,7 +97,7 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
     TTF_Font* ttf_font,
     const std::string& line,
     const std::size_t line_index,
-    std::size_t width_in_pixels
+    const int text_area_width_in_pixels
 ) {
 
     std::vector<TextLayoutEngine::DocumentLayoutLine> document_layout_lines;
@@ -113,7 +113,7 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
                 ttf_font,
                 line,
                 pos,
-                width_in_pixels,
+                text_area_width_in_pixels,
                 &prefix_width_in_pixels,
                 &prefix_length
             )
@@ -188,7 +188,7 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
 TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
     TTF_Font* ttf_font,
     const Document& document,
-    const std::size_t width_in_pixels
+    const int text_area_width_in_pixels
 ) {
     DocumentLayout document_layout;
 
@@ -198,7 +198,7 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
     for (const auto& line: document.lines) {
         SPDLOG_DEBUG("line_index={}", line_index);
 
-        std::vector<DocumentLayoutLine> wrapped_lines = wrap_line(ttf_font, line, line_index, width_in_pixels);
+        std::vector<DocumentLayoutLine> wrapped_lines = wrap_line(ttf_font, line, line_index, text_area_width_in_pixels);
         document_layout.lines.append_range(std::move(wrapped_lines));
 
         ++ line_index;
@@ -210,8 +210,8 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
 bool TextLayoutEngine::draw_document_layout(
     TTF_Text* ttf_text,
     const int font_line_skip,
-    const int screen_width_in_pixels,
-    const int screen_height_in_pixels,
+    const int text_area_width_in_pixels,
+    const int text_area_height_in_pixels,
     const DocumentLayout& document_layout,
     const std::size_t start_line
 ) {
@@ -219,22 +219,26 @@ bool TextLayoutEngine::draw_document_layout(
     const auto dy{font_line_skip};
     for (const auto& [line_index, line]: std::ranges::enumerate_view(document_layout.lines)) {
 
-        if (line_index < start_line) {
+        if (line_index < static_cast<int64_t>(start_line)) {
             continue;
         }
 
-        const auto width_pixels = line.width_pixels;
+        const auto line_width_in_pixels = line.width_pixels;
         //const auto height_pixels = line.height_pixels;
-        const auto height_pixels = font_line_skip;
+        const auto line_height_in_pixels = font_line_skip;
 
-        if (0 + width_pixels <= screen_width_in_pixels) {
+        if (0 + line_width_in_pixels <= text_area_width_in_pixels) {
 
         }
         else {
-            SPDLOG_WARN("skipping rendering of line {}, width is {} which exceeds maximum width of {}", line_index, 0 + width_pixels, screen_width_in_pixels);
+            SPDLOG_WARN("skipping rendering of line {}, width is {} which exceeds maximum width of {}",
+                line_index,
+                0 + line_width_in_pixels,
+                text_area_width_in_pixels
+            );
             continue;
         }
-        if (y + height_pixels <= screen_height_in_pixels) {
+        if (y + line_height_in_pixels <= text_area_height_in_pixels) {
 
         }
         else {

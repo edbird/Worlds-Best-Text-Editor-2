@@ -12,13 +12,13 @@ TextArea::~TextArea() {
 
 void TextArea::draw() const {
     //SPDLOG_INFO("font_line_skip={}, w={}, h={}, start_line={}, ttf_text={:p}",
-    //    font_line_skip, screen_width_in_pixels, screen_height_in_pixels, start_line, static_cast<void*>(ttf_text));
+    //    font_line_skip, width_in_pixels, height_in_pixels, start_line, static_cast<void*>(ttf_text));
 
     draw_document_layout(
         ttf_text,
         font_line_skip,
-        screen_width_in_pixels,
-        screen_height_in_pixels,
+        width_in_pixels,
+        height_in_pixels,
         document_layout,
         start_line
     );
@@ -38,12 +38,15 @@ void TextArea::update_document(
     const WindowGeometry& window_geometry
 ) {
 
+    width_in_pixels = window_geometry.screen_width_in_pixels;
+    height_in_pixels = window_geometry.screen_height_in_pixels;
+
     const auto ttf_font{TTF_GetTextFont(ttf_text)};
 
     document_layout = create_document_layout(
         ttf_font,
         document,
-        window_geometry.screen_width_in_pixels
+        width_in_pixels
     );
 
     log_rendering_result();

@@ -5,8 +5,15 @@
 
 struct WindowGeometry {
 
-    const int screen_width_in_pixels = 800;
-    const int screen_height_in_pixels = 600;
+    WindowGeometry()
+        : screen_width_in_pixels{800}
+        , screen_height_in_pixels{600}
+    {
+
+    }
+
+    int screen_width_in_pixels;
+    int screen_height_in_pixels;
 };
 
 #endif

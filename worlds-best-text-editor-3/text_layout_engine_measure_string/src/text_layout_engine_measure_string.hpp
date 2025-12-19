@@ -28,14 +28,14 @@ namespace TextLayoutEngine {
     DocumentLayout create_document_layout(
         TTF_Font* ttf_font,
         const Document& document,
-        const std::size_t width_in_pixels
+        const int text_area_width_in_pixels
     );
 
     bool draw_document_layout(
         TTF_Text* ttf_text,
         const int font_line_skip,
-        const int screen_width_in_pixels,
-        const int screen_height_in_pixels,
+        const int text_area_width_in_pixels,
+        const int text_area_height_in_pixels,
         const DocumentLayout& document_layout,
         const std::size_t start_line
     );
