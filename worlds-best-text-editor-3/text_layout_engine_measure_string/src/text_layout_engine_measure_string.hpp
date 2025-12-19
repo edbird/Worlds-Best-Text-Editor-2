@@ -37,7 +37,7 @@ namespace TextLayoutEngine {
         const int screen_width_in_pixels,
         const int screen_height_in_pixels,
         const DocumentLayout& document_layout,
-        const int start_line
+        const std::size_t start_line
     );
 
 }

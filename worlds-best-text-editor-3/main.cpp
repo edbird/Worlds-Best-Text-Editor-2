@@ -158,14 +158,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     const auto ttf_font = application_resources.ttf_font_list.front();
     const auto font_line_skip{TTF_GetFontLineSkip(ttf_font)};
 
-    // TODO: add to ApplicationResources
     // Maybe should be managed by TextArea?
-    TTF_Text* ttf_text = TTF_CreateText(text_engine, ttf_font, "", 0);
-    if (!ttf_text) {
+    if (!initialize_ttf_text(application_resources, text_engine, ttf_font)) {
         cleanup(application_resources);
         return SDL_APP_FAILURE;
     }
-    application_resources.ttf_text_list.push_back(ttf_text);
+    const auto ttf_text = application_resources.ttf_text_list.front();
 
     Document& document{app_state->document};
     document.read_from_file("example_textfile.txt");
@@ -183,12 +181,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
 
     auto &gui_objects = app_state->gui_objects;
     gui_objects.push_back(std::move(text_area));
-
-    //const auto thing = (dynamic_cast<TextArea*>(gui_objects.front().get()));
-    //SPDLOG_INFO("rendering result:");
-    //for (const auto& line: thing->document_layout.lines) {
-    //    SPDLOG_INFO("{}", line.text_span);
-    //}
 
     const auto performance_counter_frequency = SDL_GetPerformanceFrequency();
     auto performance_counter_last = SDL_GetPerformanceCounter();
@@ -217,18 +209,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     const auto app_state = reinterpret_cast<AppState*>(appstate);
 
-    //auto &gui_objects = app_state->gui_objects;
-    //const auto thing = (dynamic_cast<TextArea*>(gui_objects.front().get()));
-    //if (thing == nullptr) {
-    //    SPDLOG_ERROR("dynamic_cast failed");
-    //    return SDL_APP_FAILURE;
-    //}
-    //SPDLOG_INFO("rendering result:");
-    //for (const auto& line: thing->document_layout.lines) {
-    //    SPDLOG_INFO("{}", line.text_span);
-    //}
-    //return SDL_APP_SUCCESS;
-
     ApplicationResources& application_resources = *(app_state->application_resources);
 
     // TODO: don't like this - it is confusing since these are vectors but can only really have a single element
@@ -250,25 +230,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         SPDLOG_ERROR("failed to set renderer drawing color");
     }
 
-    /*const auto ttf_font{TTF_GetTextFont(ttf_text)};
-    if (!ttf_font) {
-        const auto error = SDL_GetError();
-        SPDLOG_ERROR("failed to get font from ttf text object: {}", error);
-        return false;
-    }
-
-    const auto font_line_skip{TTF_GetFontLineSkip(ttf_font)};*/
-
-    //TTF_DrawRendererText(ttf_text, 200, 200);
-    /*draw_document_layout(
-        ttf_text,
-        font_line_skip,
-        window_geometry.screen_width_in_pixels,
-        window_geometry.screen_height_in_pixels,
-        document_layout,
-        text_area.start_line
-    );*/
-
     auto &gui_objects = app_state->gui_objects;
     for (auto &gui_object: gui_objects) {
         gui_object->draw();
@@ -278,10 +239,6 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
         const auto error = SDL_GetError();
         SPDLOG_ERROR("render present failed: {}", error);
     }
-
-    //constexpr auto frame_rate_latency = static_cast<Uint32>(1000.0 / 60.0);
-    //SDL_Delay(frame_rate_latency);
-    //SDL_WaitEventTimeout(nullptr, frame_rate_latency);
 
     increment_frame_counter(frame_counter);
     const auto performance_counter = SDL_GetPerformanceCounter();

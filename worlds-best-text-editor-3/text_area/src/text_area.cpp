@@ -46,6 +46,10 @@ void TextArea::update_document(
         window_geometry.screen_width_in_pixels
     );
 
+    log_rendering_result();
+}
+
+void TextArea::log_rendering_result() {
     SPDLOG_INFO("rendering result:");
     for (const auto& line: document_layout.lines) {
         SPDLOG_INFO("{}", line.text_span);

@@ -213,7 +213,7 @@ bool TextLayoutEngine::draw_document_layout(
     const int screen_width_in_pixels,
     const int screen_height_in_pixels,
     const DocumentLayout& document_layout,
-    const int start_line
+    const std::size_t start_line
 ) {
     int y = 0;
     const auto dy{font_line_skip};

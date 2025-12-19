@@ -71,6 +71,11 @@ bool initialize_ttf_font(
     const unsigned int font_size
 );
 
-// TODO write function initialize_ttf_text
+bool initialize_ttf_text(
+    ApplicationResources& application_resources,
+    TTF_TextEngine* text_engine,
+    TTF_Font* ttf_font
+);
+
 
 #endif

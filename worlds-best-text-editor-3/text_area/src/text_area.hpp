@@ -44,6 +44,8 @@ struct TextArea : public GUIObject {
         const WindowGeometry& window_geometry
     );
 
+    void log_rendering_result();
+
     DocumentLayout document_layout;
     std::size_t start_line;
     TTF_Text* ttf_text;

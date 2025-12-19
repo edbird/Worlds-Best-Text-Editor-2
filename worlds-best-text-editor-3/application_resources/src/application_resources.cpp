@@ -267,3 +267,22 @@ bool initialize_ttf_font(
 
     return true;
 }
+
+bool initialize_ttf_text(
+    ApplicationResources& application_resources,
+    TTF_TextEngine* text_engine,
+    TTF_Font* ttf_font
+) {
+
+    SPDLOG_INFO("SDL TTF create ttf text");
+    TTF_Text* ttf_text = TTF_CreateText(text_engine, ttf_font, "", 0);
+    if (!ttf_text) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("failed to create ttf text: {}", error);
+        return false;
+    }
+
+    application_resources.ttf_text_list.push_back(ttf_text);
+
+    return true;
+}
