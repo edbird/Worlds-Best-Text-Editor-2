@@ -14,7 +14,7 @@ namespace TextLayoutEngine {
 
     struct DocumentLayoutLine {
         const std::size_t line_index;
-        const std::size_t char_index;
+        const std::size_t column_index;
         const std::string_view text_span;
         const int width_pixels;
         const int height_pixels;

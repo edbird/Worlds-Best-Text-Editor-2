@@ -151,7 +151,7 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
         const auto document_layout_line{
             TextLayoutEngine::DocumentLayoutLine{
                 .line_index{line_index},
-                .char_index{pos},
+                .column_index{pos},
                 .text_span{text_span},
                 .width_pixels{width_pixels},
                 .height_pixels{height_pixels},
