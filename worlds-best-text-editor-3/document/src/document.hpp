@@ -3,11 +3,30 @@
 
 #include "spdlog_util.hpp"
 
+#include <format>
+
+struct DocumentCursorPosition {
+    std::size_t line_index;
+    std::size_t column_index;
+};
+
+template<>
+struct std::formatter<DocumentCursorPosition> : std::formatter<std::string> {
+    auto format(const DocumentCursorPosition& document_cursor_position, auto& context) const {
+        return std::format_to(
+            context.out(),
+            "({}, {})",
+            document_cursor_position.line_index,
+            document_cursor_position.column_index
+        );
+    }
+};
+
 struct Document {
 
     Document()
         : lines{std::vector<std::string>()}
-        , cursor{std::make_pair(0ul, 0ul)}
+        , document_cursor{DocumentCursorPosition{0ul, 0ul}}
     {
     }
 
@@ -34,7 +53,7 @@ struct Document {
     void cursor_right();
 
     std::vector<std::string> lines;
-    std::tuple<std::size_t, std::size_t> cursor;
+    DocumentCursorPosition document_cursor;
 };
 
 #endif

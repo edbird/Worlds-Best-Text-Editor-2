@@ -49,26 +49,26 @@ void Document::insert_char(const std::string& utf8_character) {
         return ;
     }
 
-    auto &[cursor_y, cursor_x]{cursor};
+    auto &[cursor_line_index, cursor_column_index]{document_cursor};
 
-    if (cursor_y >= lines.size()) {
-        SPDLOG_ERROR("cursor_y={}, lines.size()={}", cursor_y, lines.size());
+    if (cursor_line_index >= lines.size()) {
+        SPDLOG_ERROR("cursor_line_index={}, lines.size()={}", cursor_line_index, lines.size());
         throw std::runtime_error(
-            std::format("cursor_y={}, lines.size()={}", cursor_y, lines.size())
+            std::format("cursor_line_index={}, lines.size()={}", cursor_line_index, lines.size())
         );
     }
 
-    auto &line{lines[cursor_y]};
+    auto &line{lines[cursor_line_index]};
 
-    if (cursor_x > line.size()) {
-        SPDLOG_ERROR("cursor_x={}, line.size()={}", cursor_x, line.size());
+    if (cursor_column_index > line.size()) {
+        SPDLOG_ERROR("cursor_column_index={}, line.size()={}", cursor_column_index, line.size());
         throw std::runtime_error(
-            std::format("cursor_x={}, line.size()={}", cursor_x, line.size())
+            std::format("cursor_column_index={}, line.size()={}", cursor_column_index, line.size())
         );
     }
 
-    line.insert(cursor_x, utf8_character);
-    ++ cursor_x;
+    line.insert(cursor_column_index, utf8_character);
+    ++ cursor_column_index;
 }
 
 void Document::delete_() {
@@ -78,39 +78,39 @@ void Document::delete_() {
         return ;
     }
 
-    auto [cursor_y, cursor_x]{cursor};
+    auto [cursor_line_index, cursor_column_index]{document_cursor};
 
-    if (cursor_y >= lines.size()) {
-        SPDLOG_ERROR("cursor_y={}, lines.size()={}", cursor_y, lines.size());
+    if (cursor_line_index >= lines.size()) {
+        SPDLOG_ERROR("cursor_line_index={}, lines.size()={}", cursor_line_index, lines.size());
         throw std::runtime_error(
-            std::format("cursor_y={}, lines.size()={}", cursor_y, lines.size())
+            std::format("cursor_line_index={}, lines.size()={}", cursor_line_index, lines.size())
         );
     }
 
-    auto &line{lines[cursor_y]};
+    auto &line{lines[cursor_line_index]};
 
-    if (cursor_x < line.size()) {
-        line.erase(cursor_x, 1);
+    if (cursor_column_index < line.size()) {
+        line.erase(cursor_column_index, 1);
     }
 
     // if cursor at end of line, need to combine next line with current line
-    else if (cursor_x == line.size()) {
+    else if (cursor_column_index == line.size()) {
         // this can only be done if there is a next line
-        if (cursor_y + 1 >= lines.size()) {
+        if (cursor_line_index + 1 >= lines.size()) {
             // there is no next line
             // do nothing
         }
         else {
-            auto next_line{std::move(lines[cursor_y + 1])};
+            auto next_line{std::move(lines[cursor_line_index + 1])};
             line.append(std::move(next_line));
-            lines.erase(lines.begin() + cursor_y + 1);
+            lines.erase(lines.begin() + cursor_line_index + 1);
         }
     }
 
-    else if (cursor_x > line.size()) {
-        SPDLOG_ERROR("cursor_x={}, line.size()={}", cursor_x, line.size());
+    else if (cursor_column_index > line.size()) {
+        SPDLOG_ERROR("cursor_column_index={}, line.size()={}", cursor_column_index, line.size());
         throw std::runtime_error(
-            std::format("cursor_x={}, line.size()={}", cursor_x, line.size())
+            std::format("cursor_column_index={}, line.size()={}", cursor_column_index, line.size())
         );
     }
 }
@@ -118,23 +118,23 @@ void Document::delete_() {
 void Document::cursor_up() {
     SPDLOG_INFO("cursor up");
 
-    auto &[cursor_y, cursor_x]{cursor};
+    auto &[cursor_line_index, cursor_column_index]{document_cursor};
 
-    if (cursor_y > 0) {
-        -- cursor_y;
+    if (cursor_line_index > 0) {
+        -- cursor_line_index;
     }
 }
 
 void Document::cursor_down() {
     SPDLOG_INFO("cursor down");
 
-    auto &[cursor_y, cursor_x]{cursor};
+    auto &[cursor_line_index, cursor_column_index]{document_cursor};
 
-    if (cursor_y + 1 < lines.size()) {
-        ++ cursor_y;
+    if (cursor_line_index + 1 < lines.size()) {
+        ++ cursor_line_index;
 
-        if (cursor_x > lines[cursor_y].size()) {
-            cursor_x = lines[cursor_y].size();
+        if (cursor_column_index > lines[cursor_line_index].size()) {
+            cursor_column_index = lines[cursor_line_index].size();
         }
     }
 }
@@ -142,19 +142,19 @@ void Document::cursor_down() {
 void Document::cursor_left() {
     SPDLOG_INFO("cursor left");
 
-    auto &[cursor_y, cursor_x]{cursor};
+    auto &[cursor_line_index, cursor_column_index]{document_cursor};
 
-    if (cursor_x > 0) {
-        -- cursor_x;
+    if (cursor_column_index > 0) {
+        -- cursor_column_index;
     }
 }
 
 void Document::cursor_right() {
     SPDLOG_INFO("cursor right");
 
-    auto &[cursor_y, cursor_x]{cursor};
+    auto &[cursor_line_index, cursor_column_index]{document_cursor};
 
-    if (cursor_x + 1 < lines[cursor_y].size()) {
-        ++ cursor_x;
+    if (cursor_column_index + 1 < lines[cursor_line_index].size()) {
+        ++ cursor_column_index;
     }
 }
