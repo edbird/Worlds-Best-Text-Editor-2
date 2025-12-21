@@ -154,7 +154,9 @@ void Document::cursor_right() {
 
     auto &[cursor_line_index, cursor_column_index]{document_cursor};
 
-    if (cursor_column_index + 1 < lines[cursor_line_index].size()) {
+    // Comparison is <= becuase cursor must be able to move 1 position beyond
+    // end of line
+    if (cursor_column_index + 1 <= lines[cursor_line_index].size()) {
         ++ cursor_column_index;
     }
 }

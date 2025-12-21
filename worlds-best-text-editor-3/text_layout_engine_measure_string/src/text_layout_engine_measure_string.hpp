@@ -11,26 +11,86 @@
 #include <string_view>
 #include <functional>
 #include <optional>
+#include <format>
 
 namespace TextLayoutEngine {
 
+    // TODO:
+    //
+    // This structure contains information about where lines are positioned
+    // in the (line_index, column_index) space as well as the (pixel_x, pixel_y)
+    // space
     struct DocumentLayoutLine {
         std::size_t line_index;
-        std::size_t char_index;
+        std::size_t column_index;
         std::string_view text_span;
-        int width_pixels;
-        int height_pixels;
+        int x;
+        int y;
+        int w;
+        int h;
+    };
+
+    struct DocumentLayoutCursorPosition {
+
+        DocumentLayoutCursorPosition()
+            : line_index{0ul}
+            , column_index{0ul}
+            , x{0}
+            , y{0}
+            , w{0}
+            , h{0}
+        {
+        }
+
+        DocumentLayoutCursorPosition(
+            std::size_t line_index,
+            std::size_t column_index,
+            int x,
+            int y,
+            int w,
+            int h
+        )
+            : line_index{line_index}
+            , column_index{column_index}
+            , x{x}
+            , y{y}
+            , w{w}
+            , h{h}
+        {
+        }
+
+        std::size_t line_index;
+        std::size_t column_index;
+        int x;
+        int y;
+        int w;
+        int h;
     };
 
     struct DocumentLayout {
 
+        DocumentLayout()
+            : lines{std::vector<DocumentLayoutLine>()}
+            , document_layout_cursor_position{DocumentLayoutCursorPosition()}
+        {
+        }
+
         std::vector<DocumentLayoutLine> lines;
-        std::tuple<std::size_t, std::size_t> cursor;
+        DocumentLayoutCursorPosition document_layout_cursor_position;
     };
 
     DocumentLayout create_document_layout(
         TTF_Font* ttf_font,
-        const std::optional<std::reference_wrapper<Document>> optional_document,
+        const int font_line_skip,
+        const Document &document,
+        const int text_area_width_in_pixels
+    );
+
+    DocumentLayoutCursorPosition convert_document_cursor_position_to_document_layout_cursor_position(
+        TTF_Font* ttf_font,
+        const int font_line_skip,
+        const DocumentLayout& document_layout,
+        const DocumentCursorPosition& document_cursor_position,
         const int text_area_width_in_pixels
     );
 
@@ -44,6 +104,23 @@ namespace TextLayoutEngine {
         const std::size_t start_line
     );
 
+    bool draw_document_cursor(
+        SDL_Renderer* renderer,
+        const DocumentLayoutCursorPosition& document_layout_cursor_positions
+    );
+
 }
+
+template<>
+struct std::formatter<TextLayoutEngine::DocumentLayoutCursorPosition> : std::formatter<std::string> {
+    auto format(const TextLayoutEngine::DocumentLayoutCursorPosition& document_layout_cursor_position, auto& context) const {
+        return std::format_to(
+            context.out(),
+            "(line={}, column={})",
+            document_layout_cursor_position.line_index,
+            document_layout_cursor_position.column_index
+        );
+    }
+};
 
 #endif

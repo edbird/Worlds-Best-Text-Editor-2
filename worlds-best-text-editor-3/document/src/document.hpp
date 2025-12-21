@@ -15,7 +15,7 @@ struct std::formatter<DocumentCursorPosition> : std::formatter<std::string> {
     auto format(const DocumentCursorPosition& document_cursor_position, auto& context) const {
         return std::format_to(
             context.out(),
-            "({}, {})",
+            "(line={}, column={})",
             document_cursor_position.line_index,
             document_cursor_position.column_index
         );

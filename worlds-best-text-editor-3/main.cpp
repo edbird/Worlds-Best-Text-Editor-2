@@ -70,7 +70,6 @@ struct AppState {
     std::unique_ptr<PerformanceTimer> performance_timer;
     KeybindingConfiguration keybinding_configuration;
     EventSystem event_system;
-    Document document;
 };
 
 
@@ -171,21 +170,20 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     }
     const auto ttf_text = application_resources.ttf_text_list.front();
 
-    Document& document{app_state->document};
-    document.read_from_file("example_textfile.txt");
-
     auto text_area{
         std::make_unique<TextArea>(
             renderer,
             ttf_text,
-            font_line_skip,
             window_geometry.screen_width_in_pixels,
-            window_geometry.screen_height_in_pixels,
-            std::ref(app_state->document)
+            window_geometry.screen_height_in_pixels
         )
     };
 
+    auto &document{text_area->document};
+    document.read_from_file("example_textfile.txt");
+
     text_area->update_document_layout();
+    text_area->update_document_cursor_position();
 
     auto &gui_objects = app_state->gui_objects;
     gui_objects.push_back(std::move(text_area));
@@ -328,9 +326,10 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *p_event) {
             SPDLOG_ERROR("dynamic cast failed");
         }
         else {
-            Document& document{app_state->document};
             text_area->update_geometry(w, h);
             text_area->update_document_layout();
+            text_area->update_document_cursor_position();
+                // TODO these two functions usually go together so write a wrapper which calls both
         }
     }
 

@@ -27,20 +27,29 @@ struct TextArea : public GUIObject {
     TextArea(
         SDL_Renderer* renderer,
         TTF_Text* ttf_text,
-        const int font_line_skip,
         const int width_in_pixels,
-        const int height_in_pixels,
-        const std::optional<std::reference_wrapper<Document>> optional_document
+        const int height_in_pixels
     )
         : start_line{0}
         , renderer{renderer}
         , ttf_text{ttf_text}
-        , font_line_skip{font_line_skip}
+        , ttf_font{nullptr}
+        , font_line_skip{0}
         , width_in_pixels{width_in_pixels}
         , height_in_pixels{height_in_pixels}
         , frame_count{0}
-        , optional_document{optional_document}
+        , document{Document()}
     {
+        const auto ttf_font{TTF_GetTextFont(ttf_text)};
+        if (!ttf_font) {
+            const auto error = SDL_GetError();
+            SPDLOG_ERROR("failed to get ttf font from ttf text: {}", error);
+            throw std::runtime_error(
+                std::format("failed to get ttf font from ttf text: {}", error)
+            );
+        }
+        TextArea::ttf_font = ttf_font;
+        font_line_skip = TTF_GetFontLineSkip(ttf_font);
     }
 
     virtual ~TextArea();
@@ -58,16 +67,19 @@ struct TextArea : public GUIObject {
 
     void update_document_layout();
 
+    void update_document_cursor_position();
+
     void log_rendering_result();
 
     DocumentLayout document_layout;
     std::size_t start_line;
     SDL_Renderer* renderer;
     TTF_Text* ttf_text;
+    TTF_Font* ttf_font;
     int font_line_skip;
     int width_in_pixels;
     int height_in_pixels;
-    std::optional<std::reference_wrapper<Document>> optional_document;
+    Document document;
 
     // TODO: remove
     int64_t frame_count;

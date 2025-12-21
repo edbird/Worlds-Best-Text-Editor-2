@@ -97,9 +97,12 @@ std::size_t find_wrap_position(
 
 std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
     TTF_Font* ttf_font,
+    const int font_line_skip,
     const std::string& line,
     const std::size_t line_index,
-    const int text_area_width_in_pixels
+    const int text_area_width_in_pixels,
+    int &y,
+    const int dy /* same as font_line_skip, but in principle may be different */
 ) {
 
     std::vector<TextLayoutEngine::DocumentLayoutLine> document_layout_lines;
@@ -166,10 +169,12 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
         const auto document_layout_line{
             TextLayoutEngine::DocumentLayoutLine{
                 .line_index{line_index},
-                .char_index{pos},
+                .column_index{pos},
                 .text_span{text_span},
-                .width_pixels{prefix_width_in_pixels},
-                .height_pixels{0}, // TODO: now not used
+                .x{0},
+                .y{y},
+                .w{prefix_width_in_pixels},
+                .h{font_line_skip}
             }
         };
 
@@ -177,6 +182,8 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
 
         pos = end_pos;
         SPDLOG_DEBUG("pos advanced to end_pos = {}", end_pos);
+
+        y += dy;
 
         if (pos == line.length()) {
             SPDLOG_DEBUG("reached end of line, break");
@@ -189,60 +196,165 @@ std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
 
 TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
     TTF_Font* ttf_font,
-    const std::optional<std::reference_wrapper<Document>> optional_document,
+    const int font_line_skip,
+    const Document &document,
     const int text_area_width_in_pixels
 ) {
-    DocumentLayout document_layout;
-    // layout cursor: (layout_row, layout_col)
-    std::get<0>(document_layout.cursor) = 0;
-    std::get<1>(document_layout.cursor) = 0;
+    auto document_layout{DocumentLayout()};
 
-    if (optional_document.has_value()) {
-        auto &document{optional_document.value().get()};
+    int y{0};
+    const int dy{font_line_skip};
 
-        std::size_t line_index = 0;
-        for (const auto& line: document.lines) {
-            SPDLOG_DEBUG("line_index={}", line_index);
+    std::size_t line_index = 0;
+    for (const auto& line: document.lines) {
+        SPDLOG_DEBUG("line_index={}", line_index);
 
-            std::vector<DocumentLayoutLine> wrapped_lines = wrap_line(ttf_font, line, line_index, text_area_width_in_pixels);
-            document_layout.lines.append_range(std::move(wrapped_lines));
+        std::vector<DocumentLayoutLine> wrapped_lines = wrap_line(
+            ttf_font,
+            font_line_skip,
+            line,
+            line_index,
+            text_area_width_in_pixels,
+            y,
+            dy
+        );
 
-            ++ line_index;
+        document_layout.lines.append_range(std::move(wrapped_lines));
+
+        ++ line_index;
+    }
+
+    return document_layout;
+}
+
+TextLayoutEngine::DocumentLayoutCursorPosition TextLayoutEngine::convert_document_cursor_position_to_document_layout_cursor_position(
+    TTF_Font* ttf_font,
+    const int font_line_skip,
+    const DocumentLayout& document_layout,
+    const DocumentCursorPosition& document_cursor_position,
+    const int text_area_width_in_pixels
+) {
+
+    SPDLOG_INFO("start of cursor position algorithm");
+    SPDLOG_INFO("document_cursor_position={}", std::format("{}", document_cursor_position));
+
+    int y{0};
+    const int dy{font_line_skip};
+
+    for (const auto& [i, document_layout_line]: std::ranges::enumerate_view(document_layout.lines)) {
+        if (document_cursor_position.line_index == document_layout_line.line_index) {
+            const auto text_span{document_layout_line.text_span};
+            const auto text_span_length = text_span.size();
+
+            SPDLOG_INFO("i={}", i);
+
+            if (document_cursor_position.column_index >= document_layout_line.column_index &&
+                document_cursor_position.column_index <= document_layout_line.column_index + text_span_length)
+                // Comparison is <= because cursor must be able to move 1 position beyond end of line
+            {
+
+                const auto column_index{
+                    document_cursor_position.column_index - document_layout_line.column_index
+                };
+                SPDLOG_INFO("!!! check this: column_index={}", column_index);
+
+                int w{0};
+                std::string tmp_text = std::string(
+                    text_span.substr(column_index, 1)
+                );
+
+                // This is a bit of a hack to handle the case where the cursor is 1 position past the end
+                if (tmp_text.size() < 1) {
+                    tmp_text = "_";
+                }
+
+                SPDLOG_INFO("tmp_text={}", tmp_text);
+                if (
+                    !calculate_text_width_in_pixels_and_length(
+                        ttf_font,
+                        tmp_text.c_str(),
+                        tmp_text.size(),
+                        text_area_width_in_pixels,
+                        &w,
+                        nullptr
+                    )
+                ) {
+                    // TODO
+                }
+
+                int x{0};
+
+                if (column_index > 0) {
+                    // Exceptional case for column 0 required because passing 0
+                    // for string length to TTF_MeasureString implies string
+                    // length determined by position of null in null terminated
+                    // string
+
+                    std::string tmp_text_2 = std::string(
+                        text_span.substr(0, column_index)
+                    );
+
+                    if (
+                        !calculate_text_width_in_pixels_and_length(
+                            ttf_font,
+                            tmp_text_2.c_str(),
+                            tmp_text_2.size(),
+                            text_area_width_in_pixels,
+                            &x,
+                            nullptr
+                        )
+                    ) {
+                        // TODO
+                    }
+                }
+
+                TextLayoutEngine::DocumentLayoutCursorPosition document_layout_cursor_position(
+                    static_cast<std::size_t>(i),
+                    column_index,
+                    x,
+                    y,
+                    w,
+                    font_line_skip
+                );
+
+                return document_layout_cursor_position;
+            }
         }
 
-        auto [doc_cursor_y, doc_cursor_x]{document.cursor};
+        y += dy;
+    }
+
+    return TextLayoutEngine::DocumentLayoutCursorPosition();
+}
+
+
+        /*auto [cursor_line_index, cursor_column_index]{document.document_cursor};
 
         std::size_t accumulated_chars{0};
         std::size_t layout_row{0};
 
         for (const auto& layout_line: document_layout.lines) {
-            if (layout_line.line_index == doc_cursor_y) {
+            if (layout_line.line_index == cursor_line_index) {
                 const std::size_t span_len = layout_line.text_span.size();
 
-                if (doc_cursor_x >= accumulated_chars + span_len) {
+                if (cursor_column_index >= accumulated_chars + span_len) {
                     // cursor is after this wrapped span; accumulate and continue
                     accumulated_chars += span_len;
                 }
                 else {
                     // cursor lies within this wrapped span
-                    std::get<0>(document_layout.cursor) = layout_row;
-                    std::get<1>(document_layout.cursor) = doc_cursor_x - accumulated_chars;
+                    document_cursor.line_index = layout_row;
+                    document_cursor.column_index = cursor_column_index - accumulated_chars;
                     break;
                 }
             }
 
-            ++layout_row;
-        }
-    }
+            ++ document_cursor.line_index;
+        }*/
 
-    const auto [cursor_y, cursor_x]{document_layout.cursor};
-    SPDLOG_INFO("cursor position: {}, {}", cursor_y, cursor_x);
-
-    return document_layout;
-}
 
 bool TextLayoutEngine::draw_document_layout(
-    SDL_Renderer* renderer,
+    SDL_Renderer* renderer, // can be removed
     TTF_Text* ttf_text,
     const int font_line_skip,
     const int text_area_width_in_pixels,
@@ -250,19 +362,18 @@ bool TextLayoutEngine::draw_document_layout(
     const DocumentLayout& document_layout,
     const std::size_t start_line
 ) {
-    const auto [cursor_y, cursor_x]{document_layout.cursor};
 
-    int y = 0;
-    const auto dy{font_line_skip};
     for (const auto& [line_index, line]: std::ranges::enumerate_view(document_layout.lines)) {
 
+        // TODO: scrolling should be done using pixels
         if (line_index < static_cast<int64_t>(start_line)) {
             continue;
         }
 
-        const auto line_width_in_pixels = line.width_pixels;
-        //const auto height_pixels = line.height_pixels;
-        const auto line_height_in_pixels = font_line_skip;
+        const auto x{line.x};
+        const auto y{line.y};
+        const auto line_width_in_pixels = line.w;
+        const auto line_height_in_pixels = line.h;
 
         if (0 + line_width_in_pixels <= text_area_width_in_pixels) {
 
@@ -289,28 +400,58 @@ bool TextLayoutEngine::draw_document_layout(
             SPDLOG_ERROR("failed to set text string: {}", error);
             return false;
         }
+                                        /*  VVVV -- TODO: change to line.x */
         if (!TTF_DrawRendererText(ttf_text, 0.0f, static_cast<float>(y))) {
             const auto error = SDL_GetError();
             SPDLOG_ERROR("failed to draw text: {}", error);
             return false;
         }
+    }
 
-        if (line_index == cursor_y) {
+    return true;
+}
+
+bool TextLayoutEngine::draw_document_cursor(
+    SDL_Renderer* renderer,
+    const DocumentLayoutCursorPosition& document_layout_cursor_position
+) {
+
+    const auto x{document_layout_cursor_position.x};
+    const auto y{document_layout_cursor_position.y};
+    const auto w{document_layout_cursor_position.w};
+    const auto h{document_layout_cursor_position.h};
+
+    const SDL_FRect rect{
+        static_cast<float>(x),
+        static_cast<float>(y),
+        static_cast<float>(w),
+        static_cast<float>(h)
+    };
+    SDL_RenderRect(renderer, &rect);
+
+    //SPDLOG_INFO("render rect: {} {} {} {}", x, y, w, h);
+
+    // TODO: error handling
+
+    return true;
+}
+
+        /*if (line_index == cursor_line_index) {
             // TODO: check cursor_x < actual length?
             int measured_width{0};
             const auto ttf_font = TTF_GetTextFont(ttf_text);
-            if (!TTF_MeasureString(ttf_font, line_text.data(), cursor_x, text_area_width_in_pixels, &measured_width, nullptr)) {
+            if (!TTF_MeasureString(ttf_font, line_text.data(), cursor_column_index, text_area_width_in_pixels, &measured_width, nullptr)) {
                 const auto error = SDL_GetError();
                 SPDLOG_ERROR("TTF_MeasureString error: {}", error);
                 return false;
             }
             // Required because length = 0 means null-terminated string
-            if (cursor_x == 0) {
+            if (cursor_column_index == 0) {
                 measured_width = 0;
             }
             //SPDLOG_INFO("cursor x placement: measured_width={}", measured_width);
 
-            const auto y{font_line_skip * cursor_y};
+            const auto y{font_line_skip * cursor_line_index};
             const auto x{measured_width};
 
             // TODO: cache this
@@ -324,10 +465,4 @@ bool TextLayoutEngine::draw_document_layout(
             const int h{font_line_skip};
             const SDL_FRect rect{static_cast<float>(x), static_cast<float>(y), static_cast<float>(w), static_cast<float>(h)};
             SDL_RenderRect(renderer, &rect);
-        }
-
-        y += dy;
-    }
-
-    return true;
-}
+        }*/
