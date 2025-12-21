@@ -46,6 +46,18 @@ void TextArea::handle_command(Command& command) {
         update_document_layout();
         update_document_cursor_position();
     }
+    else if (command.command_type == CommandType::BACKSPACE) {
+        document.backspace();
+
+        update_document_layout();
+        update_document_cursor_position();
+    }
+    else if (command.command_type == CommandType::RETURN) {
+        document.return_();
+
+        update_document_layout();
+        update_document_cursor_position();
+    }
     else if (command.command_type == CommandType::UP) {
         document.cursor_up();
 

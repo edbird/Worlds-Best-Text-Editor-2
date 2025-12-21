@@ -46,6 +46,8 @@ struct Document {
     void insert_char(const std::string& utf8_character);
 
     void delete_();
+    void backspace();
+    void return_();
 
     void cursor_up();
     void cursor_down();

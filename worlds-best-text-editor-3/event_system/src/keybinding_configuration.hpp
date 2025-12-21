@@ -68,6 +68,8 @@ struct KeybindingConfiguration {
         bind(KeyChord(SDLK_LEFT, SDL_KMOD_NONE), Command(CommandType::LEFT));
         bind(KeyChord(SDLK_RIGHT, SDL_KMOD_NONE), Command(CommandType::RIGHT));
         bind(KeyChord(SDLK_DELETE, SDL_KMOD_NONE), Command(CommandType::DELETE));
+        bind(KeyChord(SDLK_BACKSPACE, SDL_KMOD_NONE), Command(CommandType::BACKSPACE));
+        bind(KeyChord(SDLK_RETURN, SDL_KMOD_NONE), Command(CommandType::RETURN));
     }
 
     std::optional<Command> find(const KeyChord& keychord) const {

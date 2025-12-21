@@ -17,6 +17,8 @@ enum class CommandType {
     LEFT,
     RIGHT,
     DELETE,
+    BACKSPACE,
+    RETURN,
     INSERT_CHAR
 };
 
@@ -47,6 +49,12 @@ constexpr std::string_view to_string(const CommandType command_type) noexcept {
     }
     else if (command_type == CommandType::DELETE) {
         return "DELETE";
+    }
+    else if (command_type == CommandType::BACKSPACE) {
+        return "BACKSPACE";
+    }
+    else if (command_type == CommandType::RETURN) {
+        return "RETURN";
     }
     else if (command_type == CommandType::INSERT_CHAR) {
         return "INSERT_CHAR";
