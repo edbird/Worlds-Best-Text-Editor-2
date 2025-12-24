@@ -2,6 +2,8 @@ add_library(
     text_layout_engine_measure_string
     STATIC
     text_layout_engine_measure_string.cpp
+    create_document_layout_2.cpp
+    wrap_line.cpp
 )
 
 target_include_directories(

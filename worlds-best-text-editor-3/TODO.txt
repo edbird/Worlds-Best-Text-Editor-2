@@ -1,0 +1,13 @@
+create_document_layout_2 has a rendering bug, cursor is placed in wrong position when end of line is close to wrapping
+
+point to note:
+
+either VIM style cursor wrapping should be used (cursor wraps to next line
+but does not create an empty blank line/new line until text is entered)
+
+this is a bit visually confusing
+
+or: all lines should wrap if there is not enough space for an additional character
+this is so that the cursor can be placed at one place beyond the end of each line
+without wrapping
+

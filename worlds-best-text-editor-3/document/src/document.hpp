@@ -5,19 +5,19 @@
 
 #include <format>
 
-struct DocumentCursorPosition {
+struct DocumentCursor {
     std::size_t line_index;
     std::size_t column_index;
 };
 
 template<>
-struct std::formatter<DocumentCursorPosition> : std::formatter<std::string> {
-    auto format(const DocumentCursorPosition& document_cursor_position, auto& context) const {
+struct std::formatter<DocumentCursor> : std::formatter<std::string> {
+    auto format(const DocumentCursor& document_cursor, auto& context) const {
         return std::format_to(
             context.out(),
             "(line={}, column={})",
-            document_cursor_position.line_index,
-            document_cursor_position.column_index
+            document_cursor.line_index,
+            document_cursor.column_index
         );
     }
 };
@@ -26,7 +26,7 @@ struct Document {
 
     Document()
         : lines{std::vector<std::string>()}
-        , document_cursor{DocumentCursorPosition{0ul, 0ul}}
+        , document_cursor{DocumentCursor{0ul, 0ul}}
     {
     }
 
@@ -55,7 +55,7 @@ struct Document {
     void cursor_right();
 
     std::vector<std::string> lines;
-    DocumentCursorPosition document_cursor;
+    DocumentCursor document_cursor;
 };
 
 #endif
