@@ -204,6 +204,65 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]) {
     return SDL_APP_CONTINUE;
 }
 
+bool renderer_clear_window(SDL_Renderer* const renderer) {
+
+    if (!SetRenderDrawColor(renderer, COLOR_BLACK)) {
+        SPDLOG_ERROR("failed to set renderer drawing color");
+        return false;
+    }
+
+    if (!SDL_RenderClear(renderer)) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("render clear failed: {}", error);
+        return false;
+    }
+
+    if (!SDL_RenderPresent(renderer)) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("render present failed: {}", error);
+        return false;
+    }
+
+    return true;
+}
+
+bool renderer_render_window(
+    SDL_Renderer* const renderer,
+    std::vector<std::unique_ptr<GUIObject>> &gui_objects
+) {
+
+    if (!SetRenderDrawColor(renderer, COLOR_BLACK)) {
+        SPDLOG_ERROR("failed to set renderer drawing color");
+        return false;
+    }
+
+    if (!SDL_RenderClear(renderer)) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("render clear failed: {}", error);
+        return false;
+    }
+
+    if (!SetRenderDrawColor(renderer, COLOR_MAGENTA)) {
+        SPDLOG_ERROR("failed to set renderer drawing color");
+        return false;
+    }
+
+    for (auto &gui_object: gui_objects) {
+        if (!gui_object->draw()) {
+            SPDLOG_ERROR("gui object failed to draw, name: {}", gui_object->name());
+            return false;
+        }
+    }
+
+    if (!SDL_RenderPresent(renderer)) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("render present failed: {}", error);
+        return false;
+    }
+
+    return true;
+}
+
 SDL_AppResult SDL_AppIterate(void *appstate) {
     //SPDLOG_INFO("SDL_AppIterate");
 
@@ -219,34 +278,15 @@ SDL_AppResult SDL_AppIterate(void *appstate) {
 
     ApplicationResources& application_resources = *(app_state->application_resources);
 
-    // TODO: don't like this - it is confusing since these are vectors but can only really have a single element
-    const auto renderer = application_resources.renderer_list.front();
-
     FrameCounter& frame_counter = *(app_state->frame_counter);
     PerformanceTimer& performance_timer = *(app_state->performance_timer);
 
-    if (!SetRenderDrawColor(renderer, COLOR_BLACK)) {
-        SPDLOG_ERROR("failed to set renderer drawing color");
-    }
-
-    if (!SDL_RenderClear(renderer)) {
-        const auto error = SDL_GetError();
-        SPDLOG_ERROR("render clear failed: {}", error);
-    }
-
-    if (!SetRenderDrawColor(renderer, COLOR_MAGENTA)) {
-        SPDLOG_ERROR("failed to set renderer drawing color");
-    }
-
+    // TODO: don't like this - it is confusing since these are vectors but can only really have a single element
+    const auto renderer = application_resources.renderer_list.front();
     auto &gui_objects = app_state->gui_objects;
-    for (auto &gui_object: gui_objects) {
-        gui_object->draw();
-    }
-
-    if (!SDL_RenderPresent(renderer)) {
-        const auto error = SDL_GetError();
-        SPDLOG_ERROR("render present failed: {}", error);
-    }
+    if (!renderer_render_window(renderer, gui_objects)) {
+        SPDLOG_ERROR("error rendering window");
+    };
 
     increment_frame_counter(frame_counter);
     const auto performance_counter = SDL_GetPerformanceCounter();
@@ -330,6 +370,17 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *p_event) {
             text_area->update_document_layout();
             text_area->update_document_cursor_position();
                 // TODO these two functions usually go together so write a wrapper which calls both
+        }
+
+        const auto renderer = application_resources.renderer_list.front();
+
+        if (!renderer_clear_window(renderer)) {
+            SPDLOG_ERROR("error rendering window (clear)");
+        }
+
+        auto &gui_objects = app_state->gui_objects;
+        if (!renderer_render_window(renderer, gui_objects)) {
+            SPDLOG_ERROR("error rendering window");
         }
     }
 
