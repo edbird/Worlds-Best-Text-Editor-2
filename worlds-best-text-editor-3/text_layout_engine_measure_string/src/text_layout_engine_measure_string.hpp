@@ -79,6 +79,13 @@ namespace TextLayoutEngine {
         DocumentLayoutCursorPosition document_layout_cursor_position;
     };
 
+    DocumentLayout create_document_layout_2(
+        TTF_Font* ttf_font,
+        const int font_line_skip,
+        const Document &document,
+        const int text_area_width_in_pixels
+    );
+
     DocumentLayout create_document_layout(
         TTF_Font* ttf_font,
         const int font_line_skip,

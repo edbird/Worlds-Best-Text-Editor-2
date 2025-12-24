@@ -78,6 +78,7 @@ bool calculate_number_of_characters_that_fit_on_line(
         prefix_width_in_pixels,
         prefix_length
     )) {
+        SPDLOG_ERROR("failed to calculate number of characters that fit on line");
         return false;
     }
 
@@ -227,6 +228,135 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
     return document_layout;
 }
 
+// TODO: factor some of these parts into sub functions
+TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout_2(
+    TTF_Font* ttf_font,
+    const int font_line_skip,
+    const Document &document,
+    const int text_area_width_in_pixels
+) {
+    auto document_layout{DocumentLayout()};
+
+    auto &document_cursor_position{document.document_cursor};
+
+    int y{0};
+    const int dy{font_line_skip};
+
+    for (const auto& [line_index, line]: std::ranges::enumerate_view(document.lines)) {
+
+        SPDLOG_DEBUG("line_index={}", line_index);
+
+        std::vector<DocumentLayoutLine> wrapped_lines = wrap_line(
+            ttf_font,
+            font_line_skip,
+            line,
+            line_index,
+            text_area_width_in_pixels,
+            y,
+            dy
+        );
+
+        for (const auto& [i, document_layout_line]: std::ranges::enumerate_view(wrapped_lines)) {
+            if (document_cursor_position.line_index == document_layout_line.line_index) {
+                const auto text_span{document_layout_line.text_span};
+                const auto text_span_length = text_span.size();
+
+                if (document_cursor_position.column_index >= document_layout_line.column_index &&
+                    document_cursor_position.column_index <= document_layout_line.column_index + text_span_length)
+                    // Comparison is <= because cursor must be able to move 1 position beyond end of line
+                {
+
+                    const auto column_index{
+                        document_cursor_position.column_index - document_layout_line.column_index
+                    };
+
+                    int w{0};
+                    std::string text_under_caret = std::string(
+                        text_span.substr(column_index, 1)
+                    );
+
+                    // This is a bit of a hack to handle the case where the cursor is 1 position past the end
+                    if (text_under_caret.size() < 1) {
+                        text_under_caret = "_";
+                    }
+
+                    SPDLOG_INFO("text_under_caret={}", text_under_caret);
+                    if (
+                        !calculate_text_width_in_pixels_and_length(
+                            ttf_font,
+                            text_under_caret.c_str(),
+                            text_under_caret.size(),
+                            text_area_width_in_pixels,
+                            &w,
+                            nullptr
+                        )
+                    ) {
+                        SPDLOG_ERROR("failed to calculate number of characters that fit on line"); // TODO wrong message
+                    }
+
+                    int x{0};
+
+                    if (column_index > 0) {
+                        // Exceptional case for column 0 required because passing 0
+                        // for string length to TTF_MeasureString implies string
+                        // length determined by position of null in null terminated
+                        // string
+
+                        std::string tmp_text_2 = std::string(
+                            text_span.substr(0, column_index)
+                        );
+
+                        if (
+                            !calculate_text_width_in_pixels_and_length(
+                                ttf_font,
+                                tmp_text_2.c_str(),
+                                tmp_text_2.size(),
+                                text_area_width_in_pixels,
+                                &x,
+                                nullptr
+                            )
+                        ) {
+                            SPDLOG_ERROR("failed to calculate number of characters that fit on line"); // TODO wrong message
+                        }
+                    }
+                    else {
+                        // column 0
+                        // do nothing
+                    }
+
+                    // TODO: <= or < ?
+                    if (x + w <= text_area_width_in_pixels) {
+                        // ok
+                    }
+                    else {
+                        // cursor off end of screen
+                        x = 0;
+                        y += dy;
+                    }
+
+                    TextLayoutEngine::DocumentLayoutCursorPosition document_layout_cursor_position(
+                        static_cast<std::size_t>(i),
+                        column_index,
+                        x,
+                        y,
+                        w,
+                        font_line_skip
+                    );
+
+                    document_layout.document_layout_cursor_position = std::move(document_layout_cursor_position);
+                }
+            }
+        }
+
+        document_layout.lines.append_range(std::move(wrapped_lines));
+
+        y += dy;
+    }
+
+    return document_layout;
+}
+
+// TODO: factor some of these parts into sub functions
 TextLayoutEngine::DocumentLayoutCursorPosition TextLayoutEngine::convert_document_cursor_position_to_document_layout_cursor_position(
     TTF_Font* ttf_font,
     const int font_line_skip,
@@ -246,8 +376,6 @@ TextLayoutEngine::DocumentLayoutCursorPosition TextLayoutEngine::convert_documen
             const auto text_span{document_layout_line.text_span};
             const auto text_span_length = text_span.size();
 
-            SPDLOG_INFO("i={}", i);
-
             if (document_cursor_position.column_index >= document_layout_line.column_index &&
                 document_cursor_position.column_index <= document_layout_line.column_index + text_span_length)
                 // Comparison is <= because cursor must be able to move 1 position beyond end of line
@@ -256,30 +384,29 @@ TextLayoutEngine::DocumentLayoutCursorPosition TextLayoutEngine::convert_documen
                 const auto column_index{
                     document_cursor_position.column_index - document_layout_line.column_index
                 };
-                SPDLOG_INFO("!!! check this: column_index={}", column_index);
 
                 int w{0};
-                std::string tmp_text = std::string(
+                std::string text_under_caret = std::string(
                     text_span.substr(column_index, 1)
                 );
 
                 // This is a bit of a hack to handle the case where the cursor is 1 position past the end
-                if (tmp_text.size() < 1) {
-                    tmp_text = "_";
+                if (text_under_caret.size() < 1) {
+                    text_under_caret = "_";
                 }
 
-                SPDLOG_INFO("tmp_text={}", tmp_text);
+                SPDLOG_INFO("text_under_caret={}", text_under_caret);
                 if (
                     !calculate_text_width_in_pixels_and_length(
                         ttf_font,
-                        tmp_text.c_str(),
-                        tmp_text.size(),
+                        text_under_caret.c_str(),
+                        text_under_caret.size(),
                         text_area_width_in_pixels,
                         &w,
                         nullptr
                     )
                 ) {
-                    // TODO
+                    SPDLOG_ERROR("failed to calculate number of characters that fit on line"); // TODO wrong message
                 }
 
                 int x{0};
@@ -304,8 +431,22 @@ TextLayoutEngine::DocumentLayoutCursorPosition TextLayoutEngine::convert_documen
                             nullptr
                         )
                     ) {
-                        // TODO
+                        SPDLOG_ERROR("failed to calculate number of characters that fit on line"); // TODO wrong message
                     }
+                }
+                else {
+                    // column 0
+                    // do nothing
+                }
+
+                // TODO: <= or < ?
+                if (x + w <= text_area_width_in_pixels) {
+                    // ok
+                }
+                else {
+                    // cursor off end of screen
+                    x = 0;
+                    y += dy;
                 }
 
                 TextLayoutEngine::DocumentLayoutCursorPosition document_layout_cursor_position(
