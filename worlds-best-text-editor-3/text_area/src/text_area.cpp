@@ -11,24 +11,38 @@ TextArea::~TextArea() {
 
 }
 
-void TextArea::draw() const {
+const char* TextArea::name() const {
+    return "TextArea";
+}
+
+bool TextArea::draw() const {
     //SPDLOG_INFO("font_line_skip={}, w={}, h={}, start_line={}, ttf_text={:p}",
     //    font_line_skip, width_in_pixels, height_in_pixels, start_line, static_cast<void*>(ttf_text));
 
-    draw_document_layout(
-        renderer,
-        ttf_text,
-        font_line_skip,
-        width_in_pixels,
-        height_in_pixels,
-        document_layout,
-        start_line
-    );
+    if (!
+        draw_document_layout(
+            renderer,
+            ttf_text,
+            font_line_skip,
+            width_in_pixels,
+            height_in_pixels,
+            document_layout,
+            start_line
+        )
+    ) {
+        return false;
+    };
 
-    draw_document_cursor(
-        renderer,
-        document_layout.document_layout_cursor_position
-    );
+    if (!
+        draw_document_cursor(
+            renderer,
+            document_layout.document_layout_cursor_position
+        )
+    ) {
+        return false;
+    };
+
+    return true;
 }
 
 void TextArea::handle_command(Command& command) {
@@ -40,7 +54,7 @@ void TextArea::handle_command(Command& command) {
         update_document_layout();
         update_document_cursor_position();
     }
-    else if (command.command_type == CommandType::DELETE) {
+    else if (command.command_type == CommandType::DELETE_) {
         document.delete_();
 
         update_document_layout();

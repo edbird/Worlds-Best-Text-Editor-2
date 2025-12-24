@@ -15,7 +15,9 @@ struct GUIObject {
 
     virtual ~GUIObject() {}
 
-    virtual void draw() const = 0;
+    virtual const char* name() const = 0;
+
+    virtual bool draw() const = 0;
 
     virtual void handle_command(Command &command) = 0;
 
@@ -54,7 +56,9 @@ struct TextArea : public GUIObject {
 
     virtual ~TextArea();
 
-    virtual void draw() const;
+    virtual const char* name() const;
+
+    virtual bool draw() const;
 
     virtual void handle_command(Command& command);
 
