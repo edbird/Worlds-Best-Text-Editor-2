@@ -11,8 +11,6 @@
 #include <optional>
 #include <unordered_map>
 
-//#undef DELETE
-
 struct KeyChord {
 
     KeyChord(const SDL_Keycode keycode, const SDL_Keymod keymod)
@@ -67,7 +65,7 @@ struct KeybindingConfiguration {
         bind(KeyChord(SDLK_DOWN, SDL_KMOD_NONE), Command(CommandType::DOWN));
         bind(KeyChord(SDLK_LEFT, SDL_KMOD_NONE), Command(CommandType::LEFT));
         bind(KeyChord(SDLK_RIGHT, SDL_KMOD_NONE), Command(CommandType::RIGHT));
-        bind(KeyChord(SDLK_DELETE, SDL_KMOD_NONE), Command(CommandType::DELETE));
+        bind(KeyChord(SDLK_DELETE, SDL_KMOD_NONE), Command(CommandType::DELETE_));
         bind(KeyChord(SDLK_BACKSPACE, SDL_KMOD_NONE), Command(CommandType::BACKSPACE));
         bind(KeyChord(SDLK_RETURN, SDL_KMOD_NONE), Command(CommandType::RETURN));
     }
