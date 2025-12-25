@@ -2,7 +2,7 @@ add_library(
     text_layout_engine_measure_string
     STATIC
     text_layout_engine_measure_string.cpp
-    create_document_layout_2.cpp
+    private_functions.cpp
     wrap_line.cpp
 )
 

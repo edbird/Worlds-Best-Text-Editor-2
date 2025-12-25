@@ -11,8 +11,11 @@
 #include <tuple>
 #include <functional>
 
+#include "document.hpp"
+#include "document_layout.hpp"
 #include "document_layout_cursor.hpp"
 #include "wrap_line.hpp"
+#include "private_functions.hpp"
 
 
 TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
@@ -48,6 +51,21 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
     return document_layout;
 }
 
+
+std::string get_text_under_cursor(
+    const Document& document
+) {
+    const auto &cursor_line{document.lines[document.document_cursor.line_index]};
+    if (document.document_cursor.column_index < cursor_line.size()) {
+        const auto text_under_cursor{cursor_line.substr(document.document_cursor.column_index, 1)};
+        return text_under_cursor;
+    }
+    else {
+        const auto text_under_cursor{"_"};
+        return text_under_cursor;
+    }
+}
+
 bool calculate_cursor_width(
     TTF_Font* const ttf_font,
     std::string text_under_cursor,
@@ -79,20 +97,6 @@ bool calculate_cursor_width(
     return true;
 }
 
-std::string get_text_under_cursor(
-    const Document& document
-) {
-    const auto &cursor_line{document.lines[document.document_cursor.line_index]};
-    if (document.document_cursor.column_index < cursor_line.size()) {
-        const auto text_under_cursor{cursor_line.substr(document.document_cursor.column_index, 1)};
-        return text_under_cursor;
-    }
-    else {
-        const auto text_under_cursor{"_"};
-        return text_under_cursor;
-    }
-}
-
 TextLayoutEngine::DocumentLayoutCursor TextLayoutEngine::create_document_layout_cursor(
     TTF_Font* ttf_font,
     const int font_line_skip,
@@ -100,10 +104,6 @@ TextLayoutEngine::DocumentLayoutCursor TextLayoutEngine::create_document_layout_
     const DocumentLayout& document_layout,
     const int text_area_width_in_pixels
 ) {
-    // TODO: this is temporary, remove
-    //SPDLOG_ERROR("should never reach this line");
-    //return TextLayoutEngine::DocumentLayoutCursor();
-
     auto &document_cursor{document.document_cursor};
 
     SPDLOG_INFO("start of cursor position algorithm");
@@ -116,7 +116,9 @@ TextLayoutEngine::DocumentLayoutCursor TextLayoutEngine::create_document_layout_
     const int dy{font_line_skip};
 
     for (const auto& [i, document_layout_line]: std::ranges::enumerate_view(document_layout.lines)) {
+
         if (document_cursor.line_index == document_layout_line.line_index) {
+
             const auto text_span{document_layout_line.text_span};
             const auto text_span_length = text_span.size();
 
@@ -140,7 +142,6 @@ TextLayoutEngine::DocumentLayoutCursor TextLayoutEngine::create_document_layout_
                 ) {
                     SPDLOG_ERROR("failed to calculate cursor width");
                 }
-                SPDLOG_INFO("w={}", w);
 
                 int x{0};
 
@@ -249,6 +250,7 @@ bool TextLayoutEngine::draw_document_layout(
 
     return true;
 }
+
 
 bool TextLayoutEngine::draw_document_cursor(
     SDL_Renderer* renderer,

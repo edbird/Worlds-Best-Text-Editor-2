@@ -9,15 +9,6 @@
 
 #include "document_layout_line.hpp"
 
-// TODO: remove from public
-bool calculate_text_width_in_pixels_and_length(
-    TTF_Font* ttf_font,
-    const char* text,
-    const std::size_t text_length,
-    const int max_width_pixels,
-    int *const measured_width_pixels,
-    std::size_t *const measured_length
-);
 
 std::vector<TextLayoutEngine::DocumentLayoutLine> wrap_line(
     TTF_Font* ttf_font,
