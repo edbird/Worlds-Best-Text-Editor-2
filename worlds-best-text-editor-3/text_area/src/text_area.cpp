@@ -109,16 +109,16 @@ void TextArea::update_document_layout() {
 
     const auto ttf_font{TTF_GetTextFont(ttf_text)};
 
-    document_layout = create_document_layout_2(
+    /*document_layout = create_document_layout_2(
         ttf_font,
         font_line_skip,
         document,
         width_in_pixels
-    );
+    );*/
 
     // TODO: this is temporary
-    return;
-    SPDLOG_ERROR("should never reach this line");
+    //return;
+    //SPDLOG_ERROR("should never reach this line");
 
     document_layout = create_document_layout(
         ttf_font,
@@ -133,8 +133,8 @@ void TextArea::update_document_layout() {
 void TextArea::update_document_cursor_position() {
 
     // TODO: this is temporary
-    return;
-    SPDLOG_ERROR("should never reach this line");
+    //return;
+    //SPDLOG_ERROR("should never reach this line");
 
     // Note: this is by value
     const auto document_cursor{
@@ -142,11 +142,11 @@ void TextArea::update_document_cursor_position() {
     };
 
     document_layout.document_layout_cursor =
-        convert_document_cursor_to_document_layout_cursor(
+        create_document_layout_cursor(
             ttf_font,
             font_line_skip,
+            document,
             document_layout,
-            document_cursor,
             width_in_pixels
         );
 

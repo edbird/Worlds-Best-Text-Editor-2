@@ -11,6 +11,7 @@
 #include <tuple>
 #include <functional>
 
+#include "document_layout_cursor.hpp"
 #include "wrap_line.hpp"
 
 
@@ -47,21 +48,69 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout(
     return document_layout;
 }
 
+bool calculate_cursor_width(
+    TTF_Font* const ttf_font,
+    std::string text_under_cursor,
+    const int text_area_width_in_pixels,
+    int &w
+) {
 
-// TODO: factor some of these parts into sub functions
-TextLayoutEngine::DocumentLayoutCursor TextLayoutEngine::convert_document_cursor_to_document_layout_cursor(
+    // This is a bit of a hack to handle the case where the cursor is 1 position past the end
+    if (text_under_cursor.size() < 1) {
+        text_under_cursor = "_";
+    }
+
+    SPDLOG_INFO("text_under_cursor={}", text_under_cursor);
+    SPDLOG_INFO("size: {}", text_under_cursor.size());
+    if (
+        !calculate_text_width_in_pixels_and_length(
+            ttf_font,
+            text_under_cursor.c_str(),
+            text_under_cursor.size(),
+            text_area_width_in_pixels,
+            &w,
+            nullptr
+        )
+    ) {
+        SPDLOG_ERROR("failed to calculate text width");
+        return false;
+    }
+
+    return true;
+}
+
+std::string get_text_under_cursor(
+    const Document& document
+) {
+    const auto &cursor_line{document.lines[document.document_cursor.line_index]};
+    if (document.document_cursor.column_index < cursor_line.size()) {
+        const auto text_under_cursor{cursor_line.substr(document.document_cursor.column_index, 1)};
+        return text_under_cursor;
+    }
+    else {
+        const auto text_under_cursor{"_"};
+        return text_under_cursor;
+    }
+}
+
+TextLayoutEngine::DocumentLayoutCursor TextLayoutEngine::create_document_layout_cursor(
     TTF_Font* ttf_font,
     const int font_line_skip,
+    const Document& document,
     const DocumentLayout& document_layout,
-    const DocumentCursor& document_cursor,
     const int text_area_width_in_pixels
 ) {
     // TODO: this is temporary, remove
-    SPDLOG_ERROR("should never reach this line");
-    return TextLayoutEngine::DocumentLayoutCursor();
+    //SPDLOG_ERROR("should never reach this line");
+    //return TextLayoutEngine::DocumentLayoutCursor();
+
+    auto &document_cursor{document.document_cursor};
 
     SPDLOG_INFO("start of cursor position algorithm");
     SPDLOG_INFO("document_cursor={}", std::format("{}", document_cursor));
+
+    const auto text_under_cursor{get_text_under_cursor(document)};
+    SPDLOG_INFO("text_under_cursor={}", text_under_cursor);
 
     int y{0};
     const int dy{font_line_skip};
@@ -81,57 +130,35 @@ TextLayoutEngine::DocumentLayoutCursor TextLayoutEngine::convert_document_cursor
                 };
 
                 int w{0};
-                std::string text_under_caret = std::string(
-                    text_span.substr(column_index, 1)
-                );
-
-                // This is a bit of a hack to handle the case where the cursor is 1 position past the end
-                if (text_under_caret.size() < 1) {
-                    text_under_caret = "_";
-                }
-
-                SPDLOG_INFO("text_under_caret={}", text_under_caret);
                 if (
-                    !calculate_text_width_in_pixels_and_length(
+                    !calculate_cursor_width(
                         ttf_font,
-                        text_under_caret.c_str(),
-                        text_under_caret.size(),
+                        std::move(text_under_cursor),
                         text_area_width_in_pixels,
-                        &w,
-                        nullptr
+                        w
                     )
                 ) {
-                    SPDLOG_ERROR("failed to calculate number of characters that fit on line"); // TODO wrong message
+                    SPDLOG_ERROR("failed to calculate cursor width");
                 }
+                SPDLOG_INFO("w={}", w);
 
                 int x{0};
 
-                if (column_index > 0) {
-                    // Exceptional case for column 0 required because passing 0
-                    // for string length to TTF_MeasureString implies string
-                    // length determined by position of null in null terminated
-                    // string
+                std::string tmp_text = std::string(
+                    text_span.substr(0, column_index)
+                );
 
-                    std::string tmp_text_2 = std::string(
-                        text_span.substr(0, column_index)
-                    );
-
-                    if (
-                        !calculate_text_width_in_pixels_and_length(
-                            ttf_font,
-                            tmp_text_2.c_str(),
-                            tmp_text_2.size(),
-                            text_area_width_in_pixels,
-                            &x,
-                            nullptr
-                        )
-                    ) {
-                        SPDLOG_ERROR("failed to calculate number of characters that fit on line"); // TODO wrong message
-                    }
-                }
-                else {
-                    // column 0
-                    // do nothing
+                if (
+                    !calculate_text_width_in_pixels_and_length(
+                        ttf_font,
+                        tmp_text.c_str(),
+                        tmp_text.size(),
+                        text_area_width_in_pixels,
+                        &x,
+                        nullptr
+                    )
+                ) {
+                    SPDLOG_ERROR("failed to calculate text width");
                 }
 
                 // TODO: <= or < ?
@@ -163,31 +190,6 @@ TextLayoutEngine::DocumentLayoutCursor TextLayoutEngine::convert_document_cursor
 
     return TextLayoutEngine::DocumentLayoutCursor();
 }
-
-
-        /*auto [cursor_line_index, cursor_column_index]{document.document_cursor};
-
-        std::size_t accumulated_chars{0};
-        std::size_t layout_row{0};
-
-        for (const auto& layout_line: document_layout.lines) {
-            if (layout_line.line_index == cursor_line_index) {
-                const std::size_t span_len = layout_line.text_span.size();
-
-                if (cursor_column_index >= accumulated_chars + span_len) {
-                    // cursor is after this wrapped span; accumulate and continue
-                    accumulated_chars += span_len;
-                }
-                else {
-                    // cursor lies within this wrapped span
-                    document_cursor.line_index = layout_row;
-                    document_cursor.column_index = cursor_column_index - accumulated_chars;
-                    break;
-                }
-            }
-
-            ++ document_cursor.line_index;
-        }*/
 
 
 bool TextLayoutEngine::draw_document_layout(
@@ -264,42 +266,10 @@ bool TextLayoutEngine::draw_document_cursor(
         static_cast<float>(w),
         static_cast<float>(h)
     };
-    SDL_RenderRect(renderer, &rect);
-
-    //SPDLOG_INFO("render rect: {} {} {} {}", x, y, w, h);
-
-    // TODO: error handling
+    if (!SDL_RenderRect(renderer, &rect)) {
+        const auto error = SDL_GetError();
+        SPDLOG_ERROR("failed to render document cursor: {}", error);
+    };
 
     return true;
 }
-
-        /*if (line_index == cursor_line_index) {
-            // TODO: check cursor_x < actual length?
-            int measured_width{0};
-            const auto ttf_font = TTF_GetTextFont(ttf_text);
-            if (!TTF_MeasureString(ttf_font, line_text.data(), cursor_column_index, text_area_width_in_pixels, &measured_width, nullptr)) {
-                const auto error = SDL_GetError();
-                SPDLOG_ERROR("TTF_MeasureString error: {}", error);
-                return false;
-            }
-            // Required because length = 0 means null-terminated string
-            if (cursor_column_index == 0) {
-                measured_width = 0;
-            }
-            //SPDLOG_INFO("cursor x placement: measured_width={}", measured_width);
-
-            const auto y{font_line_skip * cursor_line_index};
-            const auto x{measured_width};
-
-            // TODO: cache this
-            constexpr std::string_view W_string("W");
-            int w{0};
-            if (!TTF_MeasureString(ttf_font, W_string.data(), W_string.size(), 100, &w, nullptr)) {
-                const auto error = SDL_GetError();
-                SPDLOG_ERROR("TTF_MeasureString error: {}", error);
-                return false;
-            }
-            const int h{font_line_skip};
-            const SDL_FRect rect{static_cast<float>(x), static_cast<float>(y), static_cast<float>(w), static_cast<float>(h)};
-            SDL_RenderRect(renderer, &rect);
-        }*/

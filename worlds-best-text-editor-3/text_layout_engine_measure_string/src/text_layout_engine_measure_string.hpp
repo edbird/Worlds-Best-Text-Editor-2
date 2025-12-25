@@ -31,11 +31,11 @@ namespace TextLayoutEngine {
         const int text_area_width_in_pixels
     );
 
-    DocumentLayoutCursor convert_document_cursor_to_document_layout_cursor(
+    DocumentLayoutCursor create_document_layout_cursor(
         TTF_Font* ttf_font,
         const int font_line_skip,
+        const Document& document,
         const DocumentLayout& document_layout,
-        const DocumentCursor& document_cursor,
         const int text_area_width_in_pixels
     );
 

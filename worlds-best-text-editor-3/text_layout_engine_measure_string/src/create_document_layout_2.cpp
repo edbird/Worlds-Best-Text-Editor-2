@@ -16,25 +16,25 @@
 #include "wrap_line.hpp"
 
 
-bool calculate_caret_width(
+bool calculate_cursor_width(
     TTF_Font* const ttf_font,
-    std::string text_under_caret,
+    std::string text_under_cursor,
     const int text_area_width_in_pixels,
     int &w
 ) {
 
     // This is a bit of a hack to handle the case where the cursor is 1 position past the end
-    if (text_under_caret.size() < 1) {
-        text_under_caret = "_";
+    if (text_under_cursor.size() < 1) {
+        text_under_cursor = "_";
     }
 
-    SPDLOG_INFO("text_under_caret={}", text_under_caret);
-    SPDLOG_INFO("size: {}", text_under_caret.size());
+    SPDLOG_INFO("text_under_cursor={}", text_under_cursor);
+    SPDLOG_INFO("size: {}", text_under_cursor.size());
     if (
         !calculate_text_width_in_pixels_and_length(
             ttf_font,
-            text_under_caret.c_str(),
-            text_under_caret.size(),
+            text_under_cursor.c_str(),
+            text_under_cursor.size(),
             text_area_width_in_pixels,
             &w,
             nullptr
@@ -72,6 +72,8 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout_2(
 
     auto document_layout{DocumentLayout()};
 
+    const auto text_under_cursor{get_text_under_cursor(document)};
+
     int y{0};
     const int dy{font_line_skip};
 
@@ -79,8 +81,6 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout_2(
 
         SPDLOG_INFO("line_index={}", line_index);
         SPDLOG_INFO("line={}", line);
-
-        const auto text_under_cursor{get_text_under_cursor(document)};
 
         int y_copy{y};
 
@@ -120,19 +120,15 @@ TextLayoutEngine::DocumentLayout TextLayoutEngine::create_document_layout_2(
                     SPDLOG_INFO("column_index={}", column_index);
 
                     int w{0};
-                    /*std::string text_under_caret = std::string(
-                        text_span.substr(column_index, 1)
-                    );*/
                     if (
-                        !calculate_caret_width(
+                        !calculate_cursor_width(
                             ttf_font,
-                            //std::move(text_under_caret),
                             std::move(text_under_cursor),
                             text_area_width_in_pixels,
                             w
                         )
                     ) {
-                        SPDLOG_ERROR("failed to calculate caret width");
+                        SPDLOG_ERROR("failed to calculate cursor width");
                     }
                     SPDLOG_INFO("w={}", w);
 
