@@ -223,3 +223,19 @@ void Document::cursor_right() {
         ++ cursor_column_index;
     }
 }
+
+void Document::cursor_home() {
+    SPDLOG_INFO("cursor home");
+
+    auto &[cursor_line_index, cursor_column_index]{document_cursor};
+
+    cursor_column_index = 0;
+}
+
+void Document::cursor_end() {
+    SPDLOG_INFO("cursor end");
+
+    auto &[cursor_line_index, cursor_column_index]{document_cursor};
+
+    cursor_column_index = lines[cursor_line_index].size();
+}

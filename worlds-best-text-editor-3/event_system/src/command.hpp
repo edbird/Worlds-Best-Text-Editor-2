@@ -14,6 +14,8 @@ enum class CommandType {
     DOWN,
     LEFT,
     RIGHT,
+    HOME,
+    END,
     DELETE_,
     BACKSPACE,
     RETURN,
@@ -44,6 +46,12 @@ constexpr std::string_view to_string(const CommandType command_type) noexcept {
     }
     else if (command_type == CommandType::RIGHT) {
         return "RIGHT";
+    }
+    else if (command_type == CommandType::HOME) {
+        return "HOME";
+    }
+    else if (command_type == CommandType::END) {
+        return "END";
     }
     else if (command_type == CommandType::DELETE_) {
         return "DELETE";

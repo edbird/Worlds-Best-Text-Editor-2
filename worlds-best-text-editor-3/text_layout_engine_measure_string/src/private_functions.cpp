@@ -13,7 +13,6 @@ bool calculate_text_width_in_pixels_and_length(
     int *const measured_width_pixels,
     std::size_t *const measured_length
 ) {
-    SPDLOG_WARN("text_length={}", text_length);
 
     // if (!TTF_SetTextString(ttf_text, text.data(), text.size())) {
     //     throw std::runtime_error("TTF_SetTextString failure");
@@ -28,14 +27,13 @@ bool calculate_text_width_in_pixels_and_length(
     // TTF_MeasureString interprets 0 length string parameter as meaning string
     // is null terminated and length should be calculated first.
     if (text_length == 0) {
-        SPDLOG_INFO("text_length 0, return measured length 0");
+        SPDLOG_TRACE("text_length 0, return measured length 0");
         if (measured_width_pixels) {
             *measured_width_pixels = 0;
         }
         if (measured_length) {
             *measured_length = 0;
         }
-        SPDLOG_INFO("return true");
         return true;
 
         // This comment moved from TextLayoutEngine
@@ -57,10 +55,8 @@ bool calculate_text_width_in_pixels_and_length(
     ) {
         const auto error = SDL_GetError();
         SPDLOG_ERROR("measure string failed: {}", error);
-        SPDLOG_INFO("return false");
         return false;
     }
 
-    SPDLOG_INFO("return true");
     return true;
 }

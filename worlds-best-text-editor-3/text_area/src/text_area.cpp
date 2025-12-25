@@ -51,53 +51,55 @@ void TextArea::handle_command(Command& command) {
     if (command.command_type == CommandType::INSERT_CHAR) {
         document.insert_char(command.utf8_character);
 
-        update_document_layout();
-        update_document_cursor_position();
+        update_document_layout_and_cursor_position();
     }
     else if (command.command_type == CommandType::DELETE_) {
         document.delete_();
 
-        update_document_layout();
-        update_document_cursor_position();
+        update_document_layout_and_cursor_position();
     }
     else if (command.command_type == CommandType::BACKSPACE) {
         document.backspace();
 
-        update_document_layout();
-        update_document_cursor_position();
+        update_document_layout_and_cursor_position();
     }
     else if (command.command_type == CommandType::RETURN) {
         document.return_();
 
-        update_document_layout();
-        update_document_cursor_position();
+        update_document_layout_and_cursor_position();
     }
     else if (command.command_type == CommandType::UP) {
         document.cursor_up();
 
-        update_document_layout();
-        update_document_cursor_position();
+        update_document_layout_and_cursor_position();
     }
     else if (command.command_type == CommandType::DOWN) {
         document.cursor_down();
 
-        update_document_layout();
-        update_document_cursor_position();
+        update_document_layout_and_cursor_position();
     }
     else if (command.command_type == CommandType::LEFT) {
         document.cursor_left();
 
-        update_document_layout();
-        update_document_cursor_position();
+        update_document_layout_and_cursor_position();
     }
     else if (command.command_type == CommandType::RIGHT) {
         document.cursor_right();
 
-        update_document_layout();
-        update_document_cursor_position();
+        update_document_layout_and_cursor_position();
+    }
+    else if (command.command_type == CommandType::HOME) {
+        document.cursor_home();
+
+        update_document_layout_and_cursor_position();
+    }
+    else if (command.command_type == CommandType::END) {
+        document.cursor_end();
+
+        update_document_layout_and_cursor_position();
     }
     else {
-        // TextArea does not handle this command
+        SPDLOG_ERROR("unhandled command in TextArea");
     }
 }
 
@@ -105,20 +107,14 @@ void TextArea::frame_update() {
     ++ frame_count;
 }
 
+void TextArea::update_document_layout_and_cursor_position() {
+    update_document_layout();
+    update_document_cursor_position();
+}
+
 void TextArea::update_document_layout() {
 
     const auto ttf_font{TTF_GetTextFont(ttf_text)};
-
-    /*document_layout = create_document_layout_2(
-        ttf_font,
-        font_line_skip,
-        document,
-        width_in_pixels
-    );*/
-
-    // TODO: this is temporary
-    //return;
-    //SPDLOG_ERROR("should never reach this line");
 
     document_layout = create_document_layout(
         ttf_font,
@@ -131,10 +127,6 @@ void TextArea::update_document_layout() {
 }
 
 void TextArea::update_document_cursor_position() {
-
-    // TODO: this is temporary
-    //return;
-    //SPDLOG_ERROR("should never reach this line");
 
     // Note: this is by value
     const auto document_cursor{

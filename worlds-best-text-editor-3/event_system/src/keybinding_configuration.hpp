@@ -28,9 +28,7 @@ struct KeyChord {
 template<>
 struct std::hash<KeyChord> {
     std::size_t operator()(const KeyChord& keychord) const noexcept {
-        //const std::size_t hash1 = std::hash<uint32_t>{}(static_cast<uint32_t>(keychord.keycode));
         const std::size_t hash1 = std::hash<SDL_Keycode>{}(keychord.keycode);
-        //const std::size_t hash2 = std::hash<uint16_t>{}(static_cast<uint16_t>(keychord.keymod));
         const std::size_t hash2 = std::hash<SDL_Keymod>{}(keychord.keymod);
         return hash1 ^ (hash2 << 1);
     }
@@ -57,18 +55,7 @@ struct KeybindingConfiguration {
     }
 
     // TODO: load this from JSON file
-    void load_default() {
-        SPDLOG_INFO("load default keybindings");
-        bind(KeyChord(SDLK_Q, SDL_KMOD_CTRL), Command(CommandType::QUIT));
-        bind(KeyChord(SDLK_S, SDL_KMOD_CTRL), Command(CommandType::SAVE_DOCUMENT));
-        bind(KeyChord(SDLK_UP, SDL_KMOD_NONE), Command(CommandType::UP));
-        bind(KeyChord(SDLK_DOWN, SDL_KMOD_NONE), Command(CommandType::DOWN));
-        bind(KeyChord(SDLK_LEFT, SDL_KMOD_NONE), Command(CommandType::LEFT));
-        bind(KeyChord(SDLK_RIGHT, SDL_KMOD_NONE), Command(CommandType::RIGHT));
-        bind(KeyChord(SDLK_DELETE, SDL_KMOD_NONE), Command(CommandType::DELETE_));
-        bind(KeyChord(SDLK_BACKSPACE, SDL_KMOD_NONE), Command(CommandType::BACKSPACE));
-        bind(KeyChord(SDLK_RETURN, SDL_KMOD_NONE), Command(CommandType::RETURN));
-    }
+    void load_default();
 
     std::optional<Command> find(const KeyChord& keychord) const {
         SPDLOG_INFO("find keychord with key code {} and key mod {}", keychord.keycode, keychord.keymod);

@@ -54,6 +54,9 @@ struct Document {
     void cursor_left();
     void cursor_right();
 
+    void cursor_home();
+    void cursor_end();
+
     std::vector<std::string> lines;
     DocumentCursor document_cursor;
 };

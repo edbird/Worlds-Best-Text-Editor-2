@@ -69,8 +69,8 @@ struct TextArea : public GUIObject {
         height_in_pixels = height;
     }
 
+    void update_document_layout_and_cursor_position();
     void update_document_layout();
-
     void update_document_cursor_position();
 
     void log_rendering_result();
