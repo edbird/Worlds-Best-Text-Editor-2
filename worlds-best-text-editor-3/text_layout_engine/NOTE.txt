@@ -1,0 +1,8 @@
+This is not used.
+
+It uses std::partition_point in combination with a lambda function to perform a
+search to find the number of characters which fit on a line.
+
+I kept the source code because this is quite an interesting application of this
+algorithm, although SDL provides a simpler solution in the form of
+`TTF_MeasureString`.
