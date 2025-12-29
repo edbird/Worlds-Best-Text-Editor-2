@@ -351,6 +351,20 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *p_event) {
         return SDL_APP_SUCCESS;
     }
 
+    else if (event.type == SDL_EVENT_WINDOW_EXPOSED) {
+
+        const auto renderer = application_resources.renderer_list.front();
+
+        if (!renderer_clear_window(renderer)) {
+            SPDLOG_ERROR("error rendering window (clear)");
+        }
+
+        auto &gui_objects = app_state->gui_objects;
+        if (!renderer_render_window(renderer, gui_objects)) {
+            SPDLOG_ERROR("error rendering window");
+        }
+    }
+
     else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
         const int w{event.window.data1};
         const int h{event.window.data2};
